@@ -1,0 +1,21 @@
+{
+  "name": "@rgh/auth-service",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "dev": "node --watch src/index.js",
+    "start": "node src/index.js",
+    "db:sync": "node src/scripts/syncDb.js",
+    "db:seed": "node src/scripts/seedDb.js"
+  },
+  "dependencies": {
+    "@rgh/shared": "*",
+    "bcryptjs": "^2.4.3",
+    "dotenv": "^16.4.7",
+    "express": "^4.21.2",
+    "jsonwebtoken": "^9.0.2",
+    "pg": "^8.13.3",
+    "sequelize": "^6.37.7",
+    "uuid": "^11.0.5"
+  }
+}

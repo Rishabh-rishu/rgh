@@ -1,0 +1,27 @@
+{
+  "name": "rgh-platform",
+  "version": "1.0.0",
+  "private": true,
+  "description": "RGH Platform - Microservices Backend",
+  "workspaces": [
+    "packages/*",
+    "services/*"
+  ],
+  "scripts": {
+    "dev": "concurrently -n gateway,auth,property,operations,booking,community,notification -c blue,green,yellow,magenta,cyan,red,white \"npm run dev -w @rgh/api-gateway\" \"npm run dev -w @rgh/auth-service\" \"npm run dev -w @rgh/property-service\" \"npm run dev -w @rgh/operations-service\" \"npm run dev -w @rgh/booking-service\" \"npm run dev -w @rgh/community-service\" \"npm run dev -w @rgh/notification-service\"",
+    "dev:gateway": "npm run dev -w @rgh/api-gateway",
+    "dev:auth": "npm run dev -w @rgh/auth-service",
+    "dev:property": "npm run dev -w @rgh/property-service",
+    "dev:operations": "npm run dev -w @rgh/operations-service",
+    "dev:booking": "npm run dev -w @rgh/booking-service",
+    "dev:community": "npm run dev -w @rgh/community-service",
+    "dev:notification": "npm run dev -w @rgh/notification-service",
+    "db:sync": "npm run db:sync -w @rgh/auth-service && npm run db:sync -w @rgh/property-service && npm run db:sync -w @rgh/operations-service && npm run db:sync -w @rgh/booking-service && npm run db:sync -w @rgh/community-service && npm run db:sync -w @rgh/notification-service"
+  },
+  "devDependencies": {
+    "concurrently": "^9.1.2"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}
