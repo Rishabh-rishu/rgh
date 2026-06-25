@@ -1,5 +1,10 @@
-// import jwt from "jsonwebtoken";
+export const getTokenFromAuthorizationHeader = (authHeader) => {
+  if (!authHeader) return null;
 
-// export const generateToken = (payload, expiresIn)  => {
-//   return jwt.sign(payload, "", { expiresIn: expiresIn || "2d" });
-// };
+  const [scheme, token] = authHeader.split(" ");
+  if (scheme?.toLowerCase() === "bearer" && token) {
+    return token;
+  }
+
+  return authHeader;
+};

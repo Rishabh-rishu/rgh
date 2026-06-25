@@ -14,4 +14,17 @@ function error(res, message = 'An error occurred', statusCode = 500, errors = nu
   });
 }
 
-module.exports = { success, error };
+function sendSuccessResponse(res, statusCode = 200, message = 'Success', data = {}) {
+  return success(res, data, message, statusCode);
+}
+
+function sendErrorResponse(res, statusCode = 501, message = 'An error occurred', errors = null) {
+  return error(res, message, statusCode, errors);
+}
+
+module.exports = {
+  success,
+  error,
+  sendSuccessResponse,
+  sendErrorResponse,
+};
