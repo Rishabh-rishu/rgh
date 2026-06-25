@@ -2,7 +2,7 @@ require('dotenv').config({ path: require('path').resolve(__dirname, '../../../.e
 
 const { createServiceApp, startServer } = require('@rgh/shared');
 const sequelize = require('./config/database');
-const propertyRoutes = require('./routes/propertyRoutes');
+const propertyRoutes = require('./routes/propertyRoutes').default;
 
 const PORT = process.env.PROPERTY_PORT || 3002;
 const HOST = process.env.HOST || '0.0.0.0';
@@ -15,7 +15,6 @@ const { app, logger } = createServiceApp({
 
 async function bootstrap() {
   await sequelize.connectDb();
-
   startServer({
     app,
     logger,

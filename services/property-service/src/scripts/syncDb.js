@@ -1,4 +1,4 @@
-const models = require('../models');
+const models = require('../models/index');
 
 models.sequelize.sync({ alter: process.env.DB_SYNC_ALTER === 'true' })
   .then(() => {
