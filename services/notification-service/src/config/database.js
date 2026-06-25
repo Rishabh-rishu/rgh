@@ -1,6 +1,6 @@
 const { Sequelize } = require('sequelize');
 
-const sequelize = new Sequelize(process.env.NOTIFICATION_DATABASE_URL || process.env.DATABASE_URL || 'postgres://rgh:rgh_password@localhost:5437/rgh_notification', {
+const sequelize = new Sequelize(process.env.DATABASE_URL, {
   dialect: 'postgres',
   logging: process.env.DB_LOGGING === 'true' ? console.log : false,
 });

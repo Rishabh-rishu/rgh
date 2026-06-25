@@ -1,6 +1,6 @@
 import { Sequelize } from 'sequelize';
 
-const sequelize = new Sequelize('postgresql://rgh34pusr:HS397XUv3ZQspe67@127.0.0.1:5432/rgh_db', {
+const sequelize = new Sequelize(process.env.DATABASE_URL, {
   dialect: 'postgres',
   dialectOptions: {
     connectTimeout: Number(process.env.DB_CONNECT_TIMEOUT_MS || 10000),
@@ -10,7 +10,6 @@ const sequelize = new Sequelize('postgresql://rgh34pusr:HS397XUv3ZQspe67@127.0.0
 
 async function connectDb() {
   try {
-    console.log("-=-=-=-==-",sequelize)
     await sequelize.authenticate();
     console.log('Auth service database connected successfully');
     return sequelize;
