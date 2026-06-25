@@ -1,6 +1,6 @@
 import { Sequelize } from 'sequelize';
 
-const sequelize = new Sequelize('postgresql://rgh34pusr:HS397XUv3ZQspe67@3.210.55.83:5432/rgh_db', {
+const sequelize = new Sequelize('postgresql://rgh34pusr:HS397XUv3ZQspe67@127.0.0.1:5432/rgh_db', {
   dialect: 'postgres',
   dialectOptions: {
     connectTimeout: Number(process.env.DB_CONNECT_TIMEOUT_MS || 10000),
