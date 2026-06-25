@@ -14,13 +14,20 @@ function getDatabaseUrl() {
   return `postgresql://${DB_USER}:${DB_PASSWORD}@${DB_HOST}:${DB_PORT}/${DB_NAME}`;
 }
 
-const sequelize = new Sequelize(getDatabaseUrl(), {
+const databaseUrl = getDatabaseUrl();
+const maskedDatabaseUrl = databaseUrl.replace(/\/\/([^:/]+):([^@]+)@/, '//$1:***@');
+
+const sequelize = new Sequelize(databaseUrl, {
   dialect: 'postgres',
+  dialectOptions: {
+    connectTimeout: Number(process.env.DB_CONNECT_TIMEOUT_MS || 10000),
+  },
   logging: process.env.DB_LOGGING === 'true' ? console.log : false,
 });
 
 async function connectDb() {
   try {
+    console.log(`Auth service connecting to database: ${maskedDatabaseUrl}`);
     await sequelize.authenticate();
     console.log('Auth service database connected successfully');
     return sequelize;
