@@ -1,6 +1,20 @@
 import { Sequelize } from 'sequelize';
 
-const sequelize = new Sequelize(process.env.AUTH_DATABASE_URL || process.env.DATABASE_URL || 'postgresql://rgh34pusr:HS397XUv3ZQspe67@3.210.55.83:5432/rgh_db', {
+function getDatabaseUrl() {
+  if (process.env.AUTH_DATABASE_URL || process.env.DATABASE_URL) {
+    return process.env.AUTH_DATABASE_URL || process.env.DATABASE_URL;
+  }
+
+  const { DB_HOST, DB_PORT = 5432, DB_NAME, DB_USER, DB_PASSWORD } = process.env;
+
+  if (!DB_HOST || !DB_NAME || !DB_USER || !DB_PASSWORD) {
+    throw new Error('Auth service database is not configured. Set AUTH_DATABASE_URL, DATABASE_URL, or DB_HOST/DB_NAME/DB_USER/DB_PASSWORD.');
+  }
+
+  return `postgresql://${DB_USER}:${DB_PASSWORD}@${DB_HOST}:${DB_PORT}/${DB_NAME}`;
+}
+
+const sequelize = new Sequelize(getDatabaseUrl(), {
   dialect: 'postgres',
   logging: process.env.DB_LOGGING === 'true' ? console.log : false,
 });

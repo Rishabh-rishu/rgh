@@ -1,9 +1,9 @@
-const AUTH_SERVICE_URL = "http://auth-service:3001";
-const PROPERTY_SERVICE_URL = process.env.PROPERTY_SERVICE_URL || 'http://property-service:3002';
-const OPERATIONS_SERVICE_URL = process.env.OPERATIONS_SERVICE_URL || 'http://operations-service:3003';
-const BOOKING_SERVICE_URL = process.env.BOOKING_SERVICE_URL || 'http://booking-service:3004';
-const COMMUNITY_SERVICE_URL = process.env.COMMUNITY_SERVICE_URL || 'http://community-service:3005';
-const NOTIFICATION_SERVICE_URL = process.env.NOTIFICATION_SERVICE_URL || 'http://notification-service:3006';
+const AUTH_SERVICE_URL = process.env.AUTH_SERVICE_URL || 'http://127.0.0.1:3001';
+const PROPERTY_SERVICE_URL = process.env.PROPERTY_SERVICE_URL || 'http://127.0.0.1:3002';
+const OPERATIONS_SERVICE_URL = process.env.OPERATIONS_SERVICE_URL || 'http://127.0.0.1:3003';
+const BOOKING_SERVICE_URL = process.env.BOOKING_SERVICE_URL || 'http://127.0.0.1:3004';
+const COMMUNITY_SERVICE_URL = process.env.COMMUNITY_SERVICE_URL || 'http://127.0.0.1:3005';
+const NOTIFICATION_SERVICE_URL = process.env.NOTIFICATION_SERVICE_URL || 'http://127.0.0.1:3006';
 
 const services = [
   {
