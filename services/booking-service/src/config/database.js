@@ -1,6 +1,6 @@
 const { Sequelize } = require('sequelize');
 
-const sequelize = new Sequelize(process.env.BOOKING_DATABASE_URL || process.env.DATABASE_URL || 'postgres://rgh:rgh_password@localhost:5435/rgh_booking', {
+const sequelize = new Sequelize(process.env.DATABASE_URL, {
   dialect: 'postgres',
   logging: process.env.DB_LOGGING === 'true' ? console.log : false,
 });
