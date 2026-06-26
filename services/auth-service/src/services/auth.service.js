@@ -190,6 +190,8 @@ export const logout = async (adminId) => {
   return true;
 };
 
+
+// Tenant Services
 export const tenantLogin = async ({ identifier }) => {
   const tenant = await User.findOne({
     where: {
@@ -307,4 +309,125 @@ export const tenantResetPassword = async ({ resetToken, password }) =>
     resetToken,
     password,
     role: "tenant",
+  });
+
+
+  // Security Guard Services 
+
+export const securityGuardLogin = async ({ identifier }) => {
+  const securityGuard = await User.findOne({
+    where: {
+      role: "security_guard",
+      [Op.or]: [
+        {
+          email: identifier,
+        },
+        {
+          phone: identifier,
+        },
+      ],
+    },
+  });
+  if (!securityGuard) {
+    throw new Error("securityGuard not found");
+  }
+
+  if (securityGuard.isBlocked) {
+    throw new Error("securityGuard is blocked");
+  }
+
+  const accessToken = signToken(
+    {
+      id: securityGuard.id,
+      otp: OTP,
+      role: securityGuard.role,
+      flow: "securityGuard-login",
+    },
+    OTP_TOKEN_EXPIRES_IN
+  );
+ 
+  await securityGuard.update({ accessToken });
+
+  return { accessToken };
+};
+
+export const verifySecurityGuardLoginOtp = async ({ accessToken, otp }) => {
+  const decoded = verifyToken(accessToken);
+
+  if (decoded.flow !== "securityGuard-login" || decoded.role !== "security_guard") {
+    throw new Error("Invalid token");
+  }
+
+  if (String(decoded.otp) !== String(otp)) {
+    throw new Error("Invalid OTP");
+  }
+
+  const securityGuard = await User.findOne({
+    where: {
+      id: decoded.id,
+      role: "security_guard",
+    },
+  });
+
+  if (!securityGuard) {
+    throw new Error("Security Guard not found");
+  }
+
+  const loginToken = signToken(
+    {
+      id: securityGuard.id,
+      email: securityGuard.email,
+      role: securityGuard.role,
+    },
+    ACCESS_TOKEN_EXPIRES_IN
+  );
+
+  await securityGuard.update({ accessToken: loginToken });
+
+  return {
+    tenantId: securityGuard.id,
+    email: securityGuard.email,
+    role: securityGuard.role,
+    accessToken: loginToken,
+  };
+};
+
+export const securityGuardForgotPassword = async ({ email }) => {
+  const securityGuard = await User.findOne({
+    where: {
+      email,
+      role: "security_guard",
+    },
+  });
+
+  if (!securityGuard) {
+    throw new Error("Security Guard not found");
+  }
+
+  if (securityGuard.isBlocked) {
+    throw new Error("Security Guard is blocked");
+  }
+
+  const accessToken = createForgotPasswordToken(securityGuard);
+
+  await securityGuard.update({ accessToken });
+
+  return { accessToken };
+};
+
+export const securityGuardVerifyForgotPasswordOtp = async ({ accessToken, otp }) => {
+  const resetToken = verifyForgotPasswordOtp({
+    accessToken,
+    otp,
+    role: "security_guard",
+  });
+
+  return { resetToken };
+};
+
+export const securityGuardResetPassword = async ({ resetToken, password }) =>
+  resetUserPassword({
+    resetToken,
+    password,
+    role: "security_guard",
   });

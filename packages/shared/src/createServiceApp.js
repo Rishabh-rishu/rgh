@@ -26,6 +26,7 @@ function createServiceApp({ serviceName, routes, basePath = '/api' }) {
   app.use(basePath, routes);
 
   app.use((_req, _res, next) => {
+    console.log("route section");
     const err = new Error('Route not found');
     err.statusCode = 404;
     next(err);

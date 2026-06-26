@@ -25,7 +25,7 @@ const services = [
     name: 'operations-service',
     path: '/api/operations',
     target: OPERATIONS_SERVICE_URL,
-    protected: true,
+    protected: false,
     roles: ['admin', 'security_guard', 'service_team', 'service_provider'],
     pathRewrite: { '^/api/operations': '/api/operations' },
   },

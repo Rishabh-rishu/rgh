@@ -1,6 +1,7 @@
 import { DataTypes } from "sequelize";
 import sequelize from "../config/database.js";
-
+import Amenity from "./amenity.model.js";
+import PropertyAmenity from "./propertyAmenity.model.js";
 const Property = sequelize.define(
   "Property",
   {
@@ -10,89 +11,157 @@ const Property = sequelize.define(
       primaryKey: true,
     },
 
+    title: {
+      type: DataTypes.STRING,
+      allowNull: false,
+    },
+
+    listingStatus: {
+      type: DataTypes.ENUM("rent", "sale"),
+      allowNull: false,
+      field: "listing_status",
+    },
+
+    projectId: {
+      type: DataTypes.UUID,
+      allowNull: true,
+      field: "project_id",
+    },
+
+    rentPrice: {
+      type: DataTypes.DECIMAL(12, 2),
+      allowNull: true,
+      field: "rent_price",
+    },
+
+    bed: {
+      type: DataTypes.INTEGER,
+      allowNull: true,
+    },
+
+    bathroom: {
+      type: DataTypes.INTEGER,
+      allowNull: true,
+    },
+
+    squareFeet: {
+      type: DataTypes.FLOAT,
+      allowNull: true,
+      field: "square_feet",
+    },
+
     propertyType: {
-      type: DataTypes.ENUM("Flat", "Villa"),
+      type: DataTypes.STRING,
       allowNull: false,
       field: "property_type",
     },
 
-    propertyName: {
-      type: DataTypes.STRING,
-      allowNull: false,
-      field: "property_name",
-    },
-
-    location: {
-      type: DataTypes.STRING,
-      allowNull: false,
-    },
-
     propertyCategory: {
-      type: DataTypes.ENUM("Residential", "Commercial"),
+      type: DataTypes.STRING,
       allowNull: false,
       field: "property_category",
     },
 
-    propertyFor: {
-      type: DataTypes.ENUM("Rent", "Sale"),
+    fullAddress: {
+      type: DataTypes.TEXT,
       allowNull: false,
-      field: "property_for",
+      field: "full_address",
     },
 
-    squareFeet: {
-      type: DataTypes.INTEGER,
-      field: "square_feet",
-    },
-
-    images: {
-      type: DataTypes.JSON,
+    location: {
+      type: DataTypes.STRING,
       allowNull: true,
     },
 
-    file360: {
+    parking: {
+      type: DataTypes.ENUM(
+        "none",
+        "1_car",
+        "2_car",
+        "3_car",
+        "covered",
+        "open"
+      ),
+      allowNull: true,
+    },
+
+    furnishingStatus: {
+      type: DataTypes.ENUM(
+        "furnished",
+        "semi_furnished",
+        "unfurnished"
+      ),
+      allowNull: true,
+      field: "furnishing_status",
+    },
+
+    yearBuild: {
+      type: DataTypes.INTEGER,
+      allowNull: true,
+      field: "year_build",
+    },
+
+    locationProximity: {
       type: DataTypes.STRING,
-      field: "file_360",
+      allowNull: true,
+      field: "location_proximity",
     },
 
-    descriptionEn: {
-      type: DataTypes.TEXT,
-      field: "description_en",
-    },
-
-    descriptionAr: {
-      type: DataTypes.TEXT,
-      field: "description_ar",
+    propertyReference: {
+      type: DataTypes.STRING,
+      allowNull: true,
+      unique: true,
+      field: "property_reference",
     },
 
     nearbyAttractions: {
-      type: DataTypes.JSON,
+      type: DataTypes.TEXT,
       allowNull: true,
       field: "nearby_attractions",
     },
 
-    agentName: {
-      type: DataTypes.STRING,
-      field: "agent_name",
+    description: {
+      type: DataTypes.TEXT,
+      allowNull: true,
     },
 
-    agentEmail: {
+    locationCode: {
       type: DataTypes.STRING,
-      field: "agent_email",
+      allowNull: true,
+      field: "location_code",
     },
 
-    agentPhone: {
-      type: DataTypes.STRING,
-      field: "agent_phone",
+    agentId: {
+      type: DataTypes.UUID,
+      allowNull: true,
+      field: "agent_id",
     },
 
-    agentPhoto: {
-      type: DataTypes.STRING,
-      field: "agent_photo",
+    latitude: {
+      type: DataTypes.DECIMAL(10, 8),
+      allowNull: true,
     },
 
-    amenities: {
+    longitude: {
+      type: DataTypes.DECIMAL(11, 8),
+      allowNull: true,
+    },
+
+    contentEnglish: {
+      type: DataTypes.TEXT("long"),
+      allowNull: true,
+      field: "content_english",
+    },
+
+    gallery: {
       type: DataTypes.JSON,
       allowNull: true,
+      comment: "Array of image URLs",
+    },
+
+    status: {
+      type: DataTypes.ENUM("active", "inactive"),
+      defaultValue: "active",
     },
 
     isDeleted: {
@@ -109,3 +178,32 @@ const Property = sequelize.define(
 );
 
 export default Property;
+
+
+
+// Property belongs to Agent
+// Property.belongsTo(Agent, {
+//   foreignKey: "agentId",
+//   as: "agent",
+// });
+
+// Property belongs to Project
+// Property.belongsTo(Project, {
+//   foreignKey: "projectId",
+//   as: "project",
+// });
+
+// Property <-> Amenity
+Property.belongsToMany(Amenity, {
+  through: PropertyAmenity,
+  foreignKey: "propertyId",
+  otherKey: "amenityId",
+  as: "amenities",
+});
+
+// Amenity.belongsToMany(Property, {
+//   through: PropertyAmenity,
+//   foreignKey: "amenityId",
+//   otherKey: "propertyId",
+//   as: "properties",
+// });
