@@ -20,6 +20,7 @@ export const getTokenFromAuthorizationHeader = (authHeader) => {
 
 
 const extractToken = (req) => {
+    console.log("req.headers",req.headers)
   const authHeader =
     req.headers.authorization || req.headers.Authorization;
 
@@ -32,7 +33,7 @@ const extractToken = (req) => {
   }
 
   const token =
-    req.headers.access_token ||
+    req.headers.authorization ||
     req.headers["x-access-token"];
 
   return token || null;
