@@ -183,7 +183,12 @@ export const thirdPartyLogin = async ({
   });
 
   if (!thirdParty) {
-    throw new Error("Third party not found");
+    throw new Error("We couldn’t find an account with these details. Please check and try again.");
+  }
+  if (thirdParty.status !== "ACTIVE") {
+    throw new Error(
+      `Access to this account is currently restricted. \nPlease contact support for assistance. - +974xxxxxx, abc@alshshhs.com`
+    );
   }
 
   const isPasswordValid = await bcrypt.compare(
@@ -233,7 +238,7 @@ export const thirdPartyForgotPassword = async ({
   });
 
   if (!thirdParty) {
-    throw new Error("Third party not found");
+    throw new Error("We couldn’t find an account with these details. Please check and try again.");
   }
 
   const accessToken =
@@ -268,7 +273,7 @@ export const thirdPartyVerifyForgotPasswordOtp =
       });
 
     if (!thirdParty) {
-      throw new Error("Third party not found");
+      throw new Error("We couldn’t find an account with these details. Please check and try again.");
     }
 
     if (
@@ -281,7 +286,7 @@ export const thirdPartyVerifyForgotPasswordOtp =
       Number(thirdParty.otpExpiryTime) <
       Date.now()
     ) {
-      throw new Error("OTP expired");
+      throw new Error("Your OTP has expired. Please request a new code.");
     }
 
     return {
@@ -305,7 +310,7 @@ export const thirdPartyResendOtp = async ({
     });
 
   if (!thirdParty) {
-    throw new Error("Third party not found");
+    throw new Error("We couldn’t find an account with these details. Please check and try again.");
   }
 
   const otp = OTP;
@@ -341,7 +346,7 @@ export const thirdPartyResetPassword =
       });
 
     if (!thirdParty) {
-      throw new Error("Third party not found");
+      throw new Error("We couldn’t find an account with these details. Please check and try again.");
     }
 
     if (password !== confirmPassword) {
@@ -381,7 +386,7 @@ export const thirdPartyResetPassword =
   });
 
   if (!thirdParty) {
-    throw new Error("Third party not found");
+    throw new Error("We couldn’t find an account with these details. Please check and try again.");
   }
 
   // Verify current password
@@ -406,7 +411,7 @@ export const thirdPartyResetPassword =
 
   if (isSamePassword) {
     throw new Error(
-      "New password cannot be the same as current password"
+      "New password and confirm password do not match."
     );
   }
 
@@ -437,7 +442,7 @@ export const getThirdPartyProfile = async (thirdPartyId) => {
   });
 
   if (!thirdParty) {
-    throw new Error("Third party not found");
+    throw new Error("We couldn’t find an account with these details. Please check and try again.");
   }
 
   return thirdParty;
@@ -452,7 +457,7 @@ export const thirdPartyLogout = async (thirdPartyId) => {
   });
 
   if (!thirdParty) {
-    throw new Error("Third party not found");
+    throw new Error("We couldn’t find an account with these details. Please check and try again.");
   }
 
   await thirdParty.update({
