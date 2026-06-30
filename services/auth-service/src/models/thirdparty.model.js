@@ -1,6 +1,6 @@
-import { DataTypes } from "sequelize";
+import { DataTypes, Op } from "sequelize";
 import sequelize from "../config/database.js";
-
+ 
 const ThirdParty = sequelize.define(
   "ThirdParty",
   {
@@ -9,148 +9,122 @@ const ThirdParty = sequelize.define(
       defaultValue: DataTypes.UUIDV4,
       primaryKey: true,
     },
-
+ 
+    thirdPartyId: {
+      type: DataTypes.STRING(20),
+      unique: true,
+      allowNull: false,
+    },
+ 
     // Owner Details
     firstName: {
       type: DataTypes.STRING,
       allowNull: false,
     },
-
+ 
     lastName: {
       type: DataTypes.STRING,
       allowNull: false,
     },
-
-    firstNameArabic: {
-      type: DataTypes.STRING,
-      allowNull: true,
-    },
-
-    lastNameArabic: {
-      type: DataTypes.STRING,
-      allowNull: true,
-    },
-
+ 
+    firstNameArabic: DataTypes.STRING,
+ 
+    lastNameArabic: DataTypes.STRING,
+ 
     email: {
       type: DataTypes.STRING,
-      allowNull: true,
+      allowNull: false,
       unique: true,
     },
-
+ 
     countryCode: {
       type: DataTypes.STRING,
       defaultValue: "+974",
     },
-
+ 
     phoneNumber: {
       type: DataTypes.STRING,
       allowNull: false,
       unique: true,
     },
-
-    fullAddress: {
-      type: DataTypes.TEXT,
-      allowNull: true,
-    },
-
-    location: {
-      type: DataTypes.STRING,
-      allowNull: true,
-    },
-
-    ownerImage: {
-      type: DataTypes.STRING,
-      allowNull: true,
-    },
-
-    idProof: {
-      type: DataTypes.STRING,
-      allowNull: true,
-    },
-
-    businessIdImage: {
-      type: DataTypes.STRING,
-      allowNull: true,
-    },
-
-    businessImage: {
-      type: DataTypes.STRING,
-      allowNull: true,
-    },
-
-    // 3rd Party Details
-
+ 
+    fullAddress: DataTypes.TEXT,
+ 
+    location: DataTypes.STRING,
+ 
+    ownerImage: DataTypes.STRING,
+ 
+    idProof: DataTypes.STRING,
+ 
+    businessIdImage: DataTypes.STRING,
+ 
+    businessImage: DataTypes.STRING,
+ 
     category: {
-      type: DataTypes.STRING,
-      allowNull: true,
+      type: DataTypes.ENUM(
+        "Salon",
+        "Gym",
+        "Swimming",
+        "Movie",
+        "Badminton"
+      ),
+      allowNull: false,
     },
-
+ 
     serviceName: {
       type: DataTypes.STRING,
-      allowNull: true,
+      allowNull: false,
     },
-
-    experience: {
-      type: DataTypes.DATEONLY,
-      allowNull: true,
-    },
-
-    address: {
-      type: DataTypes.TEXT,
-      allowNull: true,
-    },
-
-    descriptionEnglish: {
-      type: DataTypes.TEXT,
-      allowNull: true,
-    },
-
-    descriptionArabic: {
-      type: DataTypes.TEXT,
-      allowNull: true,
-    },
-
+ 
+    experience: DataTypes.DATEONLY,
+ 
+    address: DataTypes.TEXT,
+ 
+    descriptionEnglish: DataTypes.TEXT,
+ 
+    descriptionArabic: DataTypes.TEXT,
+ 
     isFeatured: {
       type: DataTypes.BOOLEAN,
       defaultValue: false,
     },
-
-    // Auth Fields (Don't Remove)
-
+ 
+    serviceList: {
+      type: DataTypes.STRING,
+      defaultValue: "N/A",
+    },
+ 
     password: {
       type: DataTypes.STRING,
       allowNull: false,
     },
-
-    accessToken: {
-      type: DataTypes.TEXT,
-      allowNull: true,
-    },
-
-    otp: {
-      type: DataTypes.STRING(6),
-      allowNull: true,
-    },
-
-    otpExpiryTime: {
-      type: DataTypes.BIGINT,
-      allowNull: true,
-    },
-
+ 
+    accessToken: DataTypes.TEXT,
+ 
+    otp: DataTypes.STRING(6),
+ 
+    otpExpiryTime: DataTypes.BIGINT,
+ 
     status: {
       type: DataTypes.ENUM("ACTIVE", "INACTIVE"),
       defaultValue: "ACTIVE",
     },
-
+ 
     isDeleted: {
       type: DataTypes.BOOLEAN,
       defaultValue: false,
     },
+ 
+    createdBy: DataTypes.UUID,
+ 
+    updatedBy: DataTypes.UUID,
   },
   {
     tableName: "third_parties",
     timestamps: true,
+    underscored: true,
   }
 );
-
+ 
+ 
 export default ThirdParty;

@@ -115,3 +115,80 @@ export const verifyThirdPartyToken = async (
     );
   }
 };
+
+
+export const verifyServiceTeamToken = async (
+  req,
+  res,
+  next
+) => {
+  try {
+    const token = extractToken(req);
+
+    if (!token) {
+      return sendErrorResponse(
+        res,
+        401,
+        "Unauthorized"
+      );
+    }
+
+    if (!process.env.JWT_SECRET) {
+      return sendErrorResponse(
+        res,
+        400,
+        "JWT secret not configured"
+      );
+    }
+
+    const decoded = jwt.verify(
+      token,
+      process.env.JWT_SECRET
+    );
+
+    const serviceTeam = await ServiceTeam.findOne({
+      where: {
+        id: decoded.id,
+        isDeleted: false,
+      },
+    });
+
+    if (!serviceTeam) {
+      return sendErrorResponse(
+        res,
+        404,
+        "Service team member not found"
+      );
+    }
+
+    if (serviceTeam.status !== "ACTIVE") {
+      return sendErrorResponse(
+        res,
+        403,
+        "Service team member is inactive"
+      );
+    }
+
+    if (
+      serviceTeam.accessToken &&
+      serviceTeam.accessToken !== token
+    ) {
+      return sendErrorResponse(
+        res,
+        401,
+        "Session expired. Please login again."
+      );
+    }
+
+    req.serviceTeam = serviceTeam;
+    req.user = serviceTeam;
+
+    next();
+  } catch (error) {
+    return sendErrorResponse(
+      res,
+      401,
+      error.message || "Invalid or expired token"
+    );
+  }
+};
