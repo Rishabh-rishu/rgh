@@ -1,95 +1,119 @@
-import amenityService from "../services/amenity.service.js";
+import AmenityService from "../services/amenity.service.js";
+import { sendSuccessResponse, sendErrorResponse } from "../utils/response.js";
+import { HTTP_STATUS } from "../utils/httpStatus.js";
 
- const createAmenity = async (req, res) => {
+export const createAmenity = async (req, res) => {
   try {
-    const amenity = await amenityService.createAmenity(req.body);
+    const amenity = await AmenityService.createAmenity(req.body);
 
-    return res.status(201).json({
-      success: true,
-      message: "Amenity created successfully",
-      data: amenity,
-    });
+    return sendSuccessResponse(
+      res,
+      HTTP_STATUS.CREATED,
+      "Amenity created successfully.",
+      amenity
+    );
   } catch (error) {
-    return res.status(500).json({
-      success: false,
-      message: error.message,
-    });
+    return sendErrorResponse(
+      res,
+      HTTP_STATUS.BAD_REQUEST,
+      error.message
+    );
   }
 };
 
- const getAmenity = async (req, res) => {
+export const getAllAmenities = async (req, res) => {
   try {
-    const amenity = await amenityService.getAmenityById(req.params.id);
+    const amenities = await AmenityService.getAllAmenities(req.query);
 
-    return res.status(200).json({
-      success: true,
-      data: amenity,
-    });
+    return sendSuccessResponse(
+      res,
+      HTTP_STATUS.OK,
+      "Amenities fetched successfully.",
+      amenities
+    );
   } catch (error) {
-    return res.status(500).json({
-      success: false,
-      message: error.message,
-    });
+    return sendErrorResponse(
+      res,
+      HTTP_STATUS.BAD_REQUEST,
+      error.message
+    );
   }
 };
 
- const getAllAmenities = async (req, res) => {
+export const getAmenityById = async (req, res) => {
   try {
-    const amenities = await amenityService.getAllAmenities();
+    const amenity = await AmenityService.getAmenityById(req.params.id);
 
-    return res.status(200).json({
-      success: true,
-      data: amenities,
-    });
+    return sendSuccessResponse(
+      res,
+      HTTP_STATUS.OK,
+      "Amenity fetched successfully.",
+      amenity
+    );
   } catch (error) {
-    return res.status(500).json({
-      success: false,
-      message: error.message,
-    });
+    return sendErrorResponse(
+      res,
+      HTTP_STATUS.BAD_REQUEST,
+      error.message
+    );
   }
 };
 
- const   updateAmenity = async (req, res) => {
+export const updateAmenity = async (req, res) => {
   try {
-    const amenity = await amenityService.updateAmenity(
+    const amenity = await AmenityService.updateAmenity(
       req.params.id,
       req.body
     );
 
-    return res.status(200).json({
-      success: true,
-      message: "Amenity updated successfully",
-      data: amenity,
-    });
+    return sendSuccessResponse(
+      res,
+      HTTP_STATUS.OK,
+      "Amenity updated successfully.",
+      amenity
+    );
   } catch (error) {
-    return res.status(500).json({
-      success: false,
-      message: error.message,
-    });
+    return sendErrorResponse(
+      res,
+      HTTP_STATUS.BAD_REQUEST,
+      error.message
+    );
   }
 };
 
- const deleteAmenity = async (req, res) => {
+export const updateAmenityStatus = async (req, res) => {
   try {
-    await amenityService.deleteAmenity(req.params.id);
+    const amenity = await AmenityService.updateAmenityStatus(req.params.id);
 
-    return res.status(200).json({
-      success: true,
-      message: "Amenity deleted successfully",
-    });
+    return sendSuccessResponse(
+      res,
+      HTTP_STATUS.OK,
+      `Amenity ${amenity.status.toLowerCase()} successfully.`,
+      amenity
+    );
   } catch (error) {
-    return res.status(500).json({
-      success: false,
-      message: error.message,
-    });
+    return sendErrorResponse(
+      res,
+      error.statusCode || HTTP_STATUS.BAD_REQUEST,
+      error.message
+    );
   }
 };
 
+export const deleteAmenity = async (req, res) => {
+  try {
+    await AmenityService.deleteAmenity(req.params.id);
 
-export default {
-    createAmenity,
-    getAmenity,
-    getAllAmenities,
-    updateAmenity,
-    deleteAmenity
-}
+    return sendSuccessResponse(
+      res,
+      HTTP_STATUS.OK,
+      "Amenity deleted successfully."
+    );
+  } catch (error) {
+    return sendErrorResponse(
+      res,
+      HTTP_STATUS.BAD_REQUEST,
+      error.message
+    );
+  }
+};

@@ -1,160 +1,213 @@
+import { Op } from "sequelize";
 import Property from "../models/property.model.js";
 import Amenity from "../models/amenity.model.js";
-import PropertyAmenity from "../models/propertyAmenity.model.js";
 
 class PropertyService {
+  /**
+   * Create Property
+   */
   async createProperty(payload) {
-    const {
-      amenityIds = [],
-      ...propertyData
-    } = payload;
 
-    const property = await Property.create(propertyData);
+    const property = await Property.create(payload);
 
-    if (amenityIds.length > 0) {
-      const mappings = amenityIds.map((amenityId) => ({
-        propertyId: property.id,
-        amenityId,
-      }));
+    return property;
+  }
 
-      await PropertyAmenity.bulkCreate(mappings);
+  /**
+   * Get All Properties
+   */
+  async getAllProperties({
+    page = 1,
+    limit = 10,
+    search = "",
+    propertyType,
+    propertyCategory,
+    listingStatus,
+    city,
+    state,
+    status,
+    minPrice,
+    maxPrice,
+  }) {
+    page = Number(page);
+    limit = Number(limit);
+
+    const offset = (page - 1) * limit;
+
+    const where = {};
+
+    if (search) {
+      where[Op.or] = [
+        {
+          title: {
+            [Op.iLike]: `%${search}%`,
+          },
+        },
+        {
+          propertyCode: {
+            [Op.iLike]: `%${search}%`,
+          },
+        },
+      ];
+    }
+
+    if (propertyType) {
+      where.propertyType = propertyType;
+    }
+
+    if (propertyCategory) {
+      where.propertyCategory = propertyCategory;
+    }
+
+    if (listingStatus) {
+      where.listingStatus = listingStatus;
+    }
+
+    if (city) {
+      where.city = city;
+    }
+
+    if (state) {
+      where.state = state;
+    }
+
+    if (status) {
+      where.status = status;
+    }
+
+    if (minPrice || maxPrice) {
+      if (listingStatus === "Rent") {
+        where.rentPrice = {};
+
+        if (minPrice)
+          where.rentPrice[Op.gte] = minPrice;
+
+        if (maxPrice)
+          where.rentPrice[Op.lte] = maxPrice;
+      } else {
+        where.salePrice = {};
+
+        if (minPrice)
+          where.salePrice[Op.gte] = minPrice;
+
+        if (maxPrice)
+          where.salePrice[Op.lte] = maxPrice;
+      }
+    }
+
+    const { count, rows } = await Property.findAndCountAll({
+      where,
+      limit,
+      offset,
+      distinct: true,
+      order: [["createdAt", "DESC"]],
+    });
+
+    return {
+      total: count,
+      page,
+      limit,
+      totalPages: Math.ceil(count / limit),
+      properties: rows,
+    };
+  }
+
+  /**
+   * Get Property By Id
+   */
+  async getPropertyById(id) {
+    const property = await Property.findByPk(id);
+    const amenityData = await Amenity.findAll({
+      where: {
+        id: {
+          [Op.in]: property.amenities || [],
+        },
+      },
+      attributes: [
+        "id",
+        "amenityNameEn",
+        "amenityNameAr",
+        "icon",
+        "status",
+      ],
+    });
+
+    const response = {
+      ...property.toJSON(),
+      amenities: amenityData,
+    };
+
+
+    if (!property) {
+      throw new Error("Property not found.");
     }
 
     return property;
   }
 
-  async getAllProperties({
-  page = 1,
-  limit = 10,
-  search = "",
-  propertyCategory,
-  listingStatus,
-}) {
-  const offset = (page - 1) * limit;
+  /**
+   * Update Property
+   */
+  async updateProperty(id, payload) {
+    const { amenities = null, ...propertyData } = payload;
 
-  const where = {
-    isDeleted: false,
-  };
+    const property = await Property.findByPk(id);
 
-  // Search by title
-  if (search) {
-    where.title = {
-      [Op.like]: `%${search}%`,
-    };
-  }
+    if (!property) {
+      throw new Error("Property not found.");
+    }
 
-  // Filter by category
-  if (propertyCategory) {
-    where.propertyCategory = propertyCategory;
-  }
+    await property.update(propertyData);
 
-  // Filter by listing type
-  if (listingStatus) {
-    where.listingStatus = listingStatus;
-  }
-
-  const { count, rows } = await Property.findAndCountAll({
-    where,
-    include: [
-      {
-        model: Amenity,
-        as: "amenities",
-        attributes: ["id", "category", "amenityNameEn","amenityNameAr"],
-        through: {
-          attributes: [],
+    if (amenities) {
+      await PropertyAmenity.destroy({
+        where: {
+          propertyId: id,
         },
-      },
-    ],
-    limit: Number(limit),
-    offset,
-    distinct: true,
-    order: [["createdAt", "DESC"]],
-  });
+      });
 
-  return {
-    total: count,
-    page: Number(page),
-    limit: Number(limit),
-    totalPages: Math.ceil(count / limit),
-    properties: rows,
-  };
-}
+      if (amenities.length) {
+        const mappings = amenities.map((amenityId) => ({
+          propertyId: id,
+          amenityId,
+        }));
 
-//   async getPropertyById(id) {
-//     return await Property.findOne({
-//       where: {
-//         id,
-//         isDeleted: false,
-//       },
-//       include: [
-//         {
-//           model: Amenity,
-//           as: "amenities",
-//           through: { attributes: [] },
-//         },
-//       ],
-//     });
-//   }
+        await PropertyAmenity.bulkCreate(mappings);
+      }
+    }
 
+    return await this.getPropertyById(id);
+  }
 
+  /**
+   * Update Property Status
+   */
+  async updatePropertyStatus(id, status) {
+    const property = await Property.findByPk(id);
 
+    if (!property) {
+      throw new Error("Property not found.");
+    }
 
-//   async updateProperty(id, payload) {
-//     const {
-//       amenityIds,
-//       ...propertyData
-//     } = payload;
+    await property.update({ status });
 
-//     const property = await Property.findOne({
-//       where: {
-//         id,
-//         isDeleted: false,
-//       },
-//     });
+    return property;
+  }
 
-//     if (!property) {
-//       throw new Error("Property not found");
-//     }
+  /**
+   * Delete Property
+   */
+  async deleteProperty(id) {
+    const property = await Property.findByPk(id);
 
-//     await property.update(propertyData);
+    if (!property) {
+      throw new Error("Property not found.");
+    }
 
-//     if (amenityIds) {
-//       await PropertyAmenity.destroy({
-//         where: {
-//           propertyId: id,
-//         },
-//       });
+    await property.destroy();
 
-//       const mappings = amenityIds.map((amenityId) => ({
-//         propertyId: id,
-//         amenityId,
-//       }));
-
-//       await PropertyAmenity.bulkCreate(mappings);
-//     }
-
-//     return property;
-//   }
-
-//   async deleteProperty(id) {
-//     const property = await Property.findOne({
-//       where: {
-//         id,
-//         isDeleted: false,
-//       },
-//     });
-
-//     if (!property) {
-//       throw new Error("Property not found");
-//     }
-
-//     await property.update({
-//       isDeleted: true,
-//     });
-
-//     return true;
-//   }
-
+    return true;
+  }
 }
 
 export default new PropertyService();

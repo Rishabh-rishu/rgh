@@ -1,21 +1,46 @@
 import express from "express";
-import  amenityController from "../controllers/amenity.controller.js";
-
-
+import * as AmenityController from "../controllers/amenity.controller.js";
+import validateRequest from "../middleware/validateRequest.js";
+import {
+  createAmenityValidator,
+  updateAmenityValidator,
+} from "../validator/amenity.validator.js";
 
 const router = express.Router();
 
-router.post("/createAmenity",amenityController.createAmenity);
+// Admin Routes
 
-router.get("/getAllAmenity", amenityController.getAllAmenities);
+router.post(
+  "/admin/createAmenity",
+  validateRequest(createAmenityValidator),
+  AmenityController.createAmenity
+);
 
-router.get("/getAmenityById/:id",amenityController.getAmenity);
+router.get(
+  "/admin/getAllAmenities",
+  AmenityController.getAllAmenities
+);
 
-router.put("/updateAmenity/:id", amenityController.updateAmenity);
+router.get(
+  "/admin/getAmenityById/:id",
+  AmenityController.getAmenityById
+);
 
-router.delete("/deleteAmenity/:id", amenityController.deleteAmenity);
+router.put(
+  "/admin/updateAmenity/:id",
+  validateRequest(updateAmenityValidator),
+  AmenityController.updateAmenity
+);
+
+router.patch(
+  "/admin/updateAmenity/:id",
+  AmenityController.updateAmenityStatus
+);
 
 
-
+router.delete(
+  "/admin/deleteAmenity/:id",
+  AmenityController.deleteAmenity
+);
 
 export default router;

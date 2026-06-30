@@ -9,13 +9,13 @@ export const createProperty = async (req, res) => {
     return sendSuccessResponse(
       res,
       HTTP_STATUS.CREATED,
-      "Property created successfully",
+      "Property created successfully.",
       property
     );
   } catch (error) {
     return sendErrorResponse(
       res,
-      HTTP_STATUS.BAD_REQUEST,
+      error.statusCode || HTTP_STATUS.BAD_REQUEST,
       error.message
     );
   }
@@ -23,100 +23,100 @@ export const createProperty = async (req, res) => {
 
 export const getAllProperties = async (req, res) => {
   try {
-    const result = await PropertyService.getAllProperties({
-      page: req.query.page,
-      limit: req.query.limit,
-      search: req.query.search,
-      propertyCategory: req.query.propertyCategory,
-      listingStatus: req.query.listingStatus,
-    });
+    const properties = await PropertyService.getAllProperties(req.query);
 
     return sendSuccessResponse(
       res,
       HTTP_STATUS.OK,
-      "Properties fetched successfully",
-      result
+      "Properties fetched successfully.",
+      properties
     );
   } catch (error) {
     return sendErrorResponse(
       res,
-      HTTP_STATUS.BAD_REQUEST,
+      error.statusCode || HTTP_STATUS.BAD_REQUEST,
       error.message
     );
   }
 };
 
-// export const getPropertyById = async (req, res) => {
-//   try {
-//     const property = await PropertyService.getPropertyById(
-//       req.params.id
-//     );
+export const getPropertyById = async (req, res) => {
+  try {
+    const property = await PropertyService.getPropertyById(req.params.id);
 
-//     if (!property) {
-//       return sendErrorResponse(
-//         res,
-//         HTTP_STATUS.NOT_FOUND,
-//         "Property not found"
-//       );
-//     }
+    return sendSuccessResponse(
+      res,
+      HTTP_STATUS.OK,
+      "Property fetched successfully.",
+      property
+    );
+  } catch (error) {
+    return sendErrorResponse(
+      res,
+      error.statusCode || HTTP_STATUS.BAD_REQUEST,
+      error.message
+    );
+  }
+};
 
-//     return sendSuccessResponse(
-//       res,
-//       HTTP_STATUS.OK,
-//       "Property fetched successfully",
-//       property
-//     );
-//   } catch (error) {
-//     return sendErrorResponse(
-//       res,
-//       HTTP_STATUS.BAD_REQUEST,
-//       error.message
-//     );
-//   }
-// };
+export const updateProperty = async (req, res) => {
+  try {
+    const property = await PropertyService.updateProperty(
+      req.params.id,
+      req.body
+    );
 
-// export const updateProperty = async (req, res) => {
-//   try {
-//     const property = await PropertyService.updateProperty(
-//       req.params.id,
-//       req.body
-//     );
+    return sendSuccessResponse(
+      res,
+      HTTP_STATUS.OK,
+      "Property updated successfully.",
+      property
+    );
+  } catch (error) {
+    return sendErrorResponse(
+      res,
+      error.statusCode || HTTP_STATUS.BAD_REQUEST,
+      error.message
+    );
+  }
+};
 
-//     return sendSuccessResponse(
-//       res,
-//       HTTP_STATUS.OK,
-//       "Property updated successfully",
-//       property
-//     );
-//   } catch (error) {
-//     return sendErrorResponse(
-//       res,
-//       HTTP_STATUS.BAD_REQUEST,
-//       error.message
-//     );
-//   }
-// };
+export const updatePropertyStatus = async (req, res) => {
+  try {
+    const property = await PropertyService.updatePropertyStatus(
+      req.params.id,
+      req.body.status
+    );
 
-// export const  deleteProperty = async (req, res) => {
-//   try {
-//     await PropertyService.deleteProperty(req.params.id);
+    return sendSuccessResponse(
+      res,
+      HTTP_STATUS.OK,
+      "Property status updated successfully.",
+      property
+    );
+  } catch (error) {
+    return sendErrorResponse(
+      res,
+      error.statusCode || HTTP_STATUS.BAD_REQUEST,
+      error.message
+    );
+  }
+};
 
-//     return sendSuccessResponse(
-//       res,
-//       HTTP_STATUS.OK,
-//       "Property deleted successfully"
-//     );
-//   } catch (error) {
-//     return sendErrorResponse(
-//       res,
-//       HTTP_STATUS.BAD_REQUEST,
-//       error.message
-//     );
-//   }
-// };
+export const deleteProperty = async (req, res) => {
+  try {
+    await PropertyService.deleteProperty(req.params.id);
 
-
-export default {
-   createProperty,
-  getAllProperties
+    return sendSuccessResponse(
+      res,
+      HTTP_STATUS.OK,
+      "Property deleted successfully."
+    );
+  } catch (error) {
+    return sendErrorResponse(
+      res,
+      error.statusCode || HTTP_STATUS.BAD_REQUEST,
+      error.message
+    );
+  }
 };

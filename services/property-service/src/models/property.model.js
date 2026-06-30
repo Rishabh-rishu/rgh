@@ -1,7 +1,6 @@
-import { DataTypes } from "sequelize";
+import { DataTypes, Op } from "sequelize";
 import sequelize from "../config/database.js";
-import Amenity from "./amenity.model.js";
-import PropertyAmenity from "./propertyAmenity.model.js";
+
 const Property = sequelize.define(
   "Property",
   {
@@ -11,199 +10,183 @@ const Property = sequelize.define(
       primaryKey: true,
     },
 
-    title: {
-      type: DataTypes.STRING,
-      allowNull: false,
-    },
-
-    listingStatus: {
-      type: DataTypes.ENUM("rent", "sale"),
-      allowNull: false,
-      field: "listing_status",
-    },
-
-    projectId: {
-      type: DataTypes.UUID,
-      allowNull: true,
-      field: "project_id",
-    },
-
-    rentPrice: {
-      type: DataTypes.DECIMAL(12, 2),
-      allowNull: true,
-      field: "rent_price",
-    },
-
-    bed: {
-      type: DataTypes.INTEGER,
-      allowNull: true,
-    },
-
-    bathroom: {
-      type: DataTypes.INTEGER,
-      allowNull: true,
-    },
-
-    squareFeet: {
-      type: DataTypes.FLOAT,
-      allowNull: true,
-      field: "square_feet",
-    },
-
-    propertyType: {
-      type: DataTypes.STRING,
-      allowNull: false,
-      field: "property_type",
-    },
-
-    propertyCategory: {
-      type: DataTypes.STRING,
-      allowNull: false,
-      field: "property_category",
-    },
-
-    fullAddress: {
-      type: DataTypes.TEXT,
-      allowNull: false,
-      field: "full_address",
-    },
-
-    location: {
-      type: DataTypes.STRING,
-      allowNull: true,
-    },
-
-    parking: {
-      type: DataTypes.ENUM(
-        "none",
-        "1_car",
-        "2_car",
-        "3_car",
-        "covered",
-        "open"
-      ),
-      allowNull: true,
-    },
-
-    furnishingStatus: {
-      type: DataTypes.ENUM(
-        "furnished",
-        "semi_furnished",
-        "unfurnished"
-      ),
-      allowNull: true,
-      field: "furnishing_status",
-    },
-
-    yearBuild: {
-      type: DataTypes.INTEGER,
-      allowNull: true,
-      field: "year_build",
-    },
-
-    locationProximity: {
-      type: DataTypes.STRING,
-      allowNull: true,
-      field: "location_proximity",
-    },
-
-    propertyReference: {
-      type: DataTypes.STRING,
-      allowNull: true,
+    propertyCode: {
+      type: DataTypes.STRING(20),
       unique: true,
-      field: "property_reference",
+      allowNull: false,
     },
 
-    nearbyAttractions: {
-      type: DataTypes.TEXT,
-      allowNull: true,
-      field: "nearby_attractions",
+    title: {
+      type: DataTypes.STRING(255),
+      allowNull: false,
     },
 
     description: {
       type: DataTypes.TEXT,
-      allowNull: true,
     },
 
-    locationCode: {
-      type: DataTypes.STRING,
-      allowNull: true,
-      field: "location_code",
+    listingStatus: {
+      type: DataTypes.ENUM("Rent", "Sale"),
+      allowNull: false,
     },
 
-    agentId: {
+    propertyType: {
+      type: DataTypes.ENUM(
+        "Apartment",
+        "Villa",
+        "House",
+        "Office",
+        "Shop",
+        "Warehouse",
+        "Land"
+      ),
+      allowNull: false,
+    },
+
+    propertyCategory: {
+      type: DataTypes.STRING(100),
+    },
+
+    rentPrice: {
+      type: DataTypes.DECIMAL(12, 2),
+    },
+
+    salePrice: {
+      type: DataTypes.DECIMAL(12, 2),
+    },
+
+    bedrooms: {
+      type: DataTypes.INTEGER,
+      defaultValue: 0,
+    },
+
+    bathrooms: {
+      type: DataTypes.INTEGER,
+      defaultValue: 0,
+    },
+
+    squareFeet: {
+      type: DataTypes.INTEGER,
+    },
+
+    furnishingStatus: {
+      type: DataTypes.BOOLEAN,
+      defaultValue: false,
+    },
+
+    parking: {
+      type: DataTypes.BOOLEAN,
+      defaultValue: false,
+    },
+
+    yearBuilt: {
+      type: DataTypes.INTEGER,
+    },
+
+    projectId: {
       type: DataTypes.UUID,
-      allowNull: true,
-      field: "agent_id",
+    },
+
+    assignedAgentId: {
+      type: DataTypes.UUID,
+    },
+
+    fullAddress: {
+      type: DataTypes.TEXT,
+    },
+
+    city: {
+      type: DataTypes.STRING,
+    },
+
+    state: {
+      type: DataTypes.STRING,
+    },
+
+    country: {
+      type: DataTypes.STRING,
+    },
+
+    zipcode: {
+      type: DataTypes.STRING,
     },
 
     latitude: {
       type: DataTypes.DECIMAL(10, 8),
-      allowNull: true,
     },
 
     longitude: {
       type: DataTypes.DECIMAL(11, 8),
-      allowNull: true,
     },
 
-    contentEnglish: {
-      type: DataTypes.TEXT("long"),
-      allowNull: true,
-      field: "content_english",
+    virtualTour: {
+      type: DataTypes.STRING,
     },
 
     gallery: {
-      type: DataTypes.JSON,
-      allowNull: true,
-      comment: "Array of image URLs",
+      type: DataTypes.JSONB,
+      defaultValue: [],
+    },
+
+    amenities: {
+      type: DataTypes.ARRAY(DataTypes.UUID),
+      defaultValue: [],
+    },
+
+    nearbyPlaces: {
+      type: DataTypes.JSONB,
+      defaultValue: [],
     },
 
     status: {
-      type: DataTypes.ENUM("active", "inactive"),
-      defaultValue: "active",
+      type: DataTypes.ENUM("Active", "InActive"),
+      defaultValue: "Active",
     },
 
-    isDeleted: {
-      type: DataTypes.BOOLEAN,
-      defaultValue: false,
-      field: "is_deleted",
+    createdBy: {
+      type: DataTypes.UUID,
+    },
+
+    updatedBy: {
+      type: DataTypes.UUID,
     },
   },
   {
     tableName: "properties",
-    timestamps: true,
     underscored: true,
+    timestamps: true,
   }
 );
 
-export default Property;
 
+Property.beforeValidate(async (property) => {
+  // Skip if propertyCode is already set
+  if (property.propertyCode) return;
 
+  const lastProperty = await Property.findOne({
+    attributes: ["propertyCode"],
+    where: {
+      propertyCode: {
+        [Op.ne]: null,
+      },
+    },
+    order: [["createdAt", "DESC"]],
+  });
 
-// Property belongs to Agent
-// Property.belongsTo(Agent, {
-//   foreignKey: "agentId",
-//   as: "agent",
-// });
+  if (!lastProperty) {
+    property.propertyCode = "ALS001";
+    return;
+  }
 
-// Property belongs to Project
-// Property.belongsTo(Project, {
-//   foreignKey: "projectId",
-//   as: "project",
-// });
+  const lastNumber = parseInt(
+    lastProperty.propertyCode.replace("ALS", ""),
+    10
+  );
 
-// Property <-> Amenity
-Property.belongsToMany(Amenity, {
-  through: PropertyAmenity,
-  foreignKey: "propertyId",
-  otherKey: "amenityId",
-  as: "amenities",
+  const nextNumber = isNaN(lastNumber) ? 1 : lastNumber + 1;
+
+  property.propertyCode = `ALS${String(nextNumber).padStart(3, "0")}`;
 });
 
-// Amenity.belongsToMany(Property, {
-//   through: PropertyAmenity,
-//   foreignKey: "amenityId",
-//   otherKey: "propertyId",
-//   as: "properties",
-// });
+
+export default Property;

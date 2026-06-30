@@ -9,6 +9,7 @@ async function connectDb() {
   try {
     await sequelize.authenticate();
     console.log('Operations service database connected successfully');
+    await sequelize.sync({ alter: true }); // Updates existing tables
     return sequelize;
   } catch (error) {
     console.error('Unable to connect to operations service database:', error.message);

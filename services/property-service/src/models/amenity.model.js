@@ -10,85 +10,32 @@ const Amenity = sequelize.define(
       primaryKey: true,
     },
 
-    category: {
-      type: DataTypes.STRING,
-      allowNull: false,
-    },
-
     amenityNameEn: {
       type: DataTypes.STRING,
       allowNull: false,
-      field: "amenity_name_en",
     },
 
     amenityNameAr: {
       type: DataTypes.STRING,
-      field: "amenity_name_ar",
+      allowNull: false,
     },
 
-    photo: {
+    icon: {
       type: DataTypes.STRING,
-      allowNull: true,
+      allowNull: false,
     },
 
-    location: {
-      type: DataTypes.STRING,
+    status: {
+      type: DataTypes.ENUM("Active", "Inactive"),
+      defaultValue: "Active",
     },
 
-    address: {
-      type: DataTypes.STRING,
+    createdBy: {
+      type: DataTypes.UUID,
     },
 
-    contactNo: {
-      type: DataTypes.STRING,
-      field: "contact_no",
-    },
-
-    descriptionEn: {
-      type: DataTypes.TEXT,
-      field: "description_en",
-    },
-
-    descriptionAr: {
-      type: DataTypes.TEXT,
-      field: "description_ar",
-    },
-
-    termsConditionEn: {
-      type: DataTypes.TEXT,
-      field: "terms_condition_en",
-    },
-
-    termsConditionAr: {
-      type: DataTypes.TEXT,
-      field: "terms_condition_ar",
-    },
-
-    availabilityDays: {
-      type: DataTypes.JSON,
-      defaultValue: [],
-      field: "availability_days",
-    },
-
-    durationFrom: {
-      type: DataTypes.TIME,
-      field: "duration_from",
-    },
-
-    durationTo: {
-      type: DataTypes.TIME,
-      field: "duration_to",
-    },
-
-    facilities: {
-      type: DataTypes.JSON,
-      defaultValue: [],
-    },
-
-    isDeleted: {
-      type: DataTypes.BOOLEAN,
-      defaultValue: false,
-      field: "is_deleted",
+    updatedBy: {
+      type: DataTypes.UUID,
     },
   },
   {

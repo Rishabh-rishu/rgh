@@ -1,16 +1,27 @@
-require('dotenv').config({ path: require('path').resolve(__dirname, '../../../.env') });
+import dotenv from "dotenv";
+import path from "path";
+import { fileURLToPath } from "url";
 
-const { createServiceApp, startServer } = require('@rgh/shared');
-const sequelize = require('./config/database');
-const operationsRoutes = require('./routes/index').default;
+import shared from "@rgh/shared";
+import sequelize from "./config/database.js";
+import operationsRoutes from "./routes/index.js";
+
+const { createServiceApp, startServer } = shared;
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+dotenv.config({
+  path: path.resolve(__dirname, "../../../.env"),
+});
 
 const PORT = process.env.OPERATIONS_PORT || 3003;
-const HOST = process.env.HOST || '0.0.0.0';
+const HOST = process.env.HOST || "0.0.0.0";
 
 const { app, logger } = createServiceApp({
-  serviceName: 'operations-service',
+  serviceName: "operations-service",
   routes: operationsRoutes,
-  basePath: '/api/operations',
+  basePath: "/api/operations",
 });
 
 async function bootstrap() {

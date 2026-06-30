@@ -1,115 +1,170 @@
+// validators/property.validator.js
+
 import Joi from "joi";
 
+const gallerySchema = Joi.object({
+  url: Joi.string().trim().required(),
+  key: Joi.string().trim().allow("", null),
+  isCover: Joi.boolean().default(false),
+  order: Joi.number().integer().min(1).default(1),
+});
+
+const nearbyPlaceSchema = Joi.object({
+  name: Joi.string().trim().required(),
+  distance: Joi.string().trim().required(),
+});
+
 export const createPropertyValidator = Joi.object({
-  title: Joi.string().trim().required().messages({
-    "string.empty": "Title is required",
-    "any.required": "Title is required",
-  }),
+  title: Joi.string().trim().min(3).max(255).required(),
+
+  description: Joi.string().trim().allow("", null),
 
   listingStatus: Joi.string()
-    .valid("rent", "sale")
-    .required()
-    .messages({
-      "any.only": "Listing status must be rent or sale",
-      "any.required": "Listing status is required",
-    }),
+    .valid("Rent", "Sale")
+    .required(),
 
-  projectId: Joi.string().uuid().optional(),
-
-  rentPrice: Joi.number().min(0).required().messages({
-    "number.base": "Rent price must be a number",
-    "any.required": "Rent price is required",
-  }),
-
-  bed: Joi.number().integer().min(0).required().messages({
-    "number.base": "Bed must be a number",
-    "any.required": "Bed is required",
-  }),
-
-  bathroom: Joi.number().integer().min(0).required().messages({
-    "number.base": "Bathroom must be a number",
-    "any.required": "Bathroom is required",
-  }),
-
-  squareFeet: Joi.number().positive().required().messages({
-    "number.base": "Square feet must be a number",
-    "any.required": "Square feet is required",
-  }),
-
-  propertyType: Joi.string().trim().required().messages({
-    "any.required": "Property type is required",
-  }),
-
-  propertyCategory: Joi.string().trim().required().messages({
-    "any.required": "Property category is required",
-  }),
-
-  fullAddress: Joi.string().trim().required().messages({
-    "any.required": "Full address is required",
-  }),
-
-  location: Joi.string().trim().required().messages({
-    "any.required": "Location is required",
-  }),
-
-  parking: Joi.string()
+  propertyType: Joi.string()
     .valid(
-      "none",
-      "1_car",
-      "2_car",
-      "3_car",
-      "covered",
-      "open"
+      "Apartment",
+      "Villa",
+      "House",
+      "Office",
+      "Shop",
+      "Warehouse",
+      "Land"
     )
-    .optional(),
+    .required(),
 
-  furnishingStatus: Joi.string()
-    .valid(
-      "furnished",
-      "semi_furnished",
-      "unfurnished"
-    )
-    .optional(),
+  propertyCategory: Joi.string().trim().allow("", null),
 
-  yearBuild: Joi.number()
+  rentPrice: Joi.when("listingStatus", {
+    is: "Rent",
+    then: Joi.number().positive().required(),
+    otherwise: Joi.number().positive().allow(null),
+  }),
+
+  salePrice: Joi.when("listingStatus", {
+    is: "Sale",
+    then: Joi.number().positive().required(),
+    otherwise: Joi.number().positive().allow(null),
+  }),
+
+  bedrooms: Joi.number().integer().min(0).default(0),
+
+  bathrooms: Joi.number().integer().min(0).default(0),
+
+  squareFeet: Joi.number().integer().positive().allow(null),
+
+  furnishingStatus: Joi.boolean().default(false),
+
+  parking: Joi.boolean().default(false),
+
+  yearBuilt: Joi.number()
     .integer()
-    .min(1900)
+    .min(1800)
     .max(new Date().getFullYear())
-    .optional(),
+    .allow(null),
 
-  locationProximity: Joi.string().allow("", null),
+  projectId: Joi.string().uuid().allow("", null),
 
-  propertyReference: Joi.string().trim().required().messages({
-    "any.required": "Property reference is required",
-  }),
+  assignedAgentId: Joi.string().uuid().allow("", null),
 
-  nearbyAttractions: Joi.string().allow("", null),
+  fullAddress: Joi.string().trim().allow("", null),
 
-  description: Joi.string().allow("", null),
+  city: Joi.string().trim().allow("", null),
 
-  locationCode: Joi.string().trim().allow("", null),
+  state: Joi.string().trim().allow("", null),
 
-  agentId: Joi.string().uuid().optional(),
+  country: Joi.string().trim().allow("", null),
 
-  latitude: Joi.number().min(-90).max(90).optional(),
+  zipcode: Joi.string().trim().allow("", null),
 
-  longitude: Joi.number().min(-180).max(180).optional(),
+  latitude: Joi.number().allow(null),
 
-  contentEnglish: Joi.string().allow("", null),
+  longitude: Joi.number().allow(null),
+
+  virtualTour: Joi.string().uri().allow("", null),
 
   gallery: Joi.array()
-    .items(Joi.string())
-    .max(30)
-    .optional()
-    .messages({
-      "array.max": "Maximum 30 images allowed",
-    }),
+    .items(gallerySchema)
+    .default([]),
 
-  amenityIds: Joi.array()
+  amenities: Joi.array()
     .items(Joi.string().uuid())
-    .optional(),
+    .default([]),
+
+  nearbyPlaces: Joi.array()
+    .items(nearbyPlaceSchema)
+    .default([]),
 
   status: Joi.string()
-    .valid("active", "inactive")
-    .optional(),
+    .valid("Active", "Inactive")
+    .default("Active"),
 });
+
+export const updatePropertyValidator = Joi.object({
+  title: Joi.string().trim().min(3).max(255),
+
+  description: Joi.string().trim().allow("", null),
+
+  listingStatus: Joi.string().valid("Rent", "Sale"),
+
+  propertyType: Joi.string().valid(
+    "Apartment",
+    "Villa",
+    "House",
+    "Office",
+    "Shop",
+    "Warehouse",
+    "Land"
+  ),
+
+  propertyCategory: Joi.string().trim().allow("", null),
+
+  rentPrice: Joi.number().positive(),
+
+  salePrice: Joi.number().positive(),
+
+  bedrooms: Joi.number().integer().min(0),
+
+  bathrooms: Joi.number().integer().min(0),
+
+  squareFeet: Joi.number().integer().positive(),
+
+  furnishingStatus: Joi.boolean().default(false),
+
+  parking: Joi.boolean(),
+
+  yearBuilt: Joi.number()
+    .integer()
+    .min(1800)
+    .max(new Date().getFullYear()),
+
+  projectId: Joi.string().uuid().allow("", null),
+
+  assignedAgentId: Joi.string().uuid().allow("", null),
+
+  fullAddress: Joi.string().trim().allow("", null),
+
+  city: Joi.string().trim().allow("", null),
+
+  state: Joi.string().trim().allow("", null),
+
+  country: Joi.string().trim().allow("", null),
+
+  zipcode: Joi.string().trim().allow("", null),
+
+  latitude: Joi.number(),
+
+  longitude: Joi.number(),
+
+  virtualTour: Joi.string().uri().allow("", null),
+
+  gallery: Joi.array().items(gallerySchema),
+
+  amenities: Joi.array().items(Joi.string().uuid()),
+
+  nearbyPlaces: Joi.array().items(nearbyPlaceSchema),
+
+  status: Joi.string().valid("Active", "Inactive"),
+}).min(1);
