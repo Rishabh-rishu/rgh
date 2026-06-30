@@ -10,7 +10,7 @@ const sequelize = new Sequelize(process.env.DATABASE_URL, {
 async function connectDb() {
   try {
     await sequelize.authenticate();
-      await sequelize.sync({ alter: true }); // Updates existing tables
+      // await sequelize.sync({ alter: true }); // Updates existing tables
     console.log("Database synchronized");
     console.log('Property service database connected successfully');
     return sequelize;

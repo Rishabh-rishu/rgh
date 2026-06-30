@@ -12,12 +12,12 @@ const Amenity = sequelize.define(
 
     category: {
       type: DataTypes.STRING,
-      allowNull: false,
+      allowNull: true,
     },
 
     amenityNameEn: {
       type: DataTypes.STRING,
-      allowNull: false,
+      allowNull: true,
       field: "amenity_name_en",
     },
 

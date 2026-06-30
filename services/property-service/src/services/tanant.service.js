@@ -68,13 +68,17 @@ class TenantService {
   // }
   async createTenant(data) {
     const {
+      tenantId,
       firstNameEn,
       firstNameAr,
       lastNameEn,
       lastNameAr,
+      countryCode,
       phoneNumber,
       email,
       password,
+      dob,
+      imageUrl,
       joiningDate,
       location,
       propertyType,
@@ -116,14 +120,17 @@ class TenantService {
 
     // Create tenant
     const tenant = await Tenant.create({
+      tenantId,
       firstNameEn,
       firstNameAr,
       lastNameEn,
       lastNameAr,
+      countryCode,
       phoneNumber,
       email,
-      password: hashedPassword,
-      accessToken: null,
+      password:hashedPassword,
+      dob,
+      imageUrl,
       joiningDate,
       location,
       propertyType,
@@ -146,46 +153,46 @@ class TenantService {
   }
 
   async getAllTenants(queryParams) {
-  const {
-    page = 1,
-    limit = 10,
-    search = "",
-    status
-  } = queryParams;
+    const {
+      page = 1,
+      limit = 10,
+      search = "",
+      status
+    } = queryParams;
 
-  const offset = (page - 1) * limit;
+    const offset = (page - 1) * limit;
 
-  const where = {
-    isDeleted: false,
-  };
+    const where = {
+      isDeleted: false,
+    };
 
-  if (search) {
-    where[Op.or] = [
-      { firstNameEn: { [Op.like]: `%${search}%` } },
-      { lastNameEn: { [Op.like]: `%${search}%` } },
-      { email: { [Op.like]: `%${search}%` } },
-      { phoneNumber: { [Op.like]: `%${search}%` } },
-    ];
+    if (search) {
+      where[Op.or] = [
+        { firstNameEn: { [Op.like]: `%${search}%` } },
+        { lastNameEn: { [Op.like]: `%${search}%` } },
+        { email: { [Op.like]: `%${search}%` } },
+        { phoneNumber: { [Op.like]: `%${search}%` } },
+      ];
+    }
+
+    if (status) {
+      where.status = status;
+    }
+
+    const { rows, count } = await Tenant.findAndCountAll({
+      where,
+      limit: Number(limit),
+      offset,
+      order: [["createdAt", "DESC"]],
+    });
+
+    return {
+      total: count,
+      page: Number(page),
+      totalPages: Math.ceil(count / limit),
+      tenants: rows,
+    };
   }
-
-  if (status) {
-    where.status = status;
-  }
-
-  const { rows, count } = await Tenant.findAndCountAll({
-    where,
-    limit: Number(limit),
-    offset,
-    order: [["createdAt", "DESC"]],
-  });
-
-  return {
-    total: count,
-    page: Number(page),
-    totalPages: Math.ceil(count / limit),
-    tenants: rows,
-  };
-}
 
   async updateTenant(id, data) {
 
@@ -227,7 +234,7 @@ class TenantService {
       leaseStartDate &&
       leaseEndDate &&
       new Date(leaseStartDate) >=
-        new Date(leaseEndDate)
+      new Date(leaseEndDate)
     ) {
       throw new Error(
         "Lease end date must be greater than lease start date"
@@ -241,24 +248,24 @@ class TenantService {
 
   async deleteTenant(id) {
 
-  const tenant = await Tenant.findOne({
-    where: {
-      id,
-      isDeleted: false,
-    },
-  });
+    const tenant = await Tenant.findOne({
+      where: {
+        id,
+        isDeleted: false,
+      },
+    });
 
-  if (!tenant) {
-    throw new Error("Tenant not found");
+    if (!tenant) {
+      throw new Error("Tenant not found");
+    }
+
+    await tenant.update({
+      isDeleted: true,
+      status: "INACTIVE",
+    });
+
+    return true;
   }
-
-  await tenant.update({
-    isDeleted: true,
-    status: "INACTIVE",
-  });
-
-  return true;
-}
 
 }
 

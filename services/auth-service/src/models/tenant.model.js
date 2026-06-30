@@ -1,4 +1,4 @@
-import { DataTypes } from "sequelize";
+  import { DataTypes } from "sequelize";
 import sequelize from "../config/database.js";
 
 const Tenant = sequelize.define(
@@ -8,6 +8,12 @@ const Tenant = sequelize.define(
       type: DataTypes.UUID,
       defaultValue: DataTypes.UUIDV4,
       primaryKey: true,
+    },
+     tenantId: {
+      type: DataTypes.STRING,
+      allowNull: false,
+      unique: true,
+      field: "tenant_id",
     },
 
     firstNameEn: {
@@ -163,7 +169,20 @@ const Tenant = sequelize.define(
     },
     otp:{
       type:DataTypes.STRING
-    }
+    },
+
+      dob: {
+      type: DataTypes.DATEONLY,
+      allowNull: true,
+      field: "dob",
+    },
+
+    // Profile Image URL
+    imageUrl: {
+      type: DataTypes.TEXT,
+      allowNull: true,
+      field: "image_url",
+    },
 
   },
   {
