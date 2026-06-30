@@ -28,7 +28,18 @@ const User = sequelize.define(
       allowNull: false,
     },
 
-    phone: DataTypes.STRING,
+      countryCode: {
+      type: DataTypes.STRING(5), // e.g. +1, +91, +44
+      allowNull: true,
+      field: "country_code",
+    },
+
+    phone:{
+
+      type: DataTypes.STRING,
+      unique: true,
+      allowNull: false,
+    },
 
     passwordHash: {
       type: DataTypes.STRING,
@@ -50,11 +61,30 @@ const User = sequelize.define(
       field: "is_verified",
     },
 
+     dob: {
+      type: DataTypes.DATEONLY,
+      allowNull: true,
+      field: "dob",
+    },
+
+    // Profile Image URL
+    imageUrl: {
+      type: DataTypes.STRING,
+      allowNull: true,
+      field: "image_url",
+    },
+
     isBlocked: {
       type: DataTypes.BOOLEAN,
       defaultValue: false,
       field: "is_blocked",
     },
+
+    nationality: {
+  type: DataTypes.STRING,
+  allowNull: true,
+  field: "nationality",
+},
 
     accessToken: {
       type: DataTypes.TEXT,

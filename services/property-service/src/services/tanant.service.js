@@ -1,7 +1,71 @@
 import Tenant from "../models/tenant.model.js";
 import { Op } from "sequelize";
+import { generatePassword } from "../utils/generatePassword.js";
 
 class TenantService {
+  // async createTenant(data) {
+  //   const {
+  //     firstNameEn,
+  //     firstNameAr,
+  //     lastNameEn,
+  //     lastNameAr,
+  //     phoneNumber,
+  //     email,
+  //     joiningDate,
+  //     location,
+  //     propertyType,
+  //     propertyId,
+  //     buildingNo,
+  //     unitNo,
+  //     tenantPlan,
+  //     leaseType,
+  //     leaseStartDate,
+  //     leaseEndDate,
+  //     documents,
+  //   } = data;
+
+  //   // Check email already exists
+  //   const existingTenant = await Tenant.findOne({
+  //     where: { email },
+  //   });
+
+  //   if (existingTenant) {
+  //     throw new Error("Email already exists");
+  //   }
+
+  //   // Validate lease dates
+  //   if (
+  //     leaseStartDate &&
+  //     leaseEndDate &&
+  //     new Date(leaseStartDate) >= new Date(leaseEndDate)
+  //   ) {
+  //     throw new Error(
+  //       "Lease end date must be greater than lease start date"
+  //     );
+  //   }
+
+  //   const tenant = await Tenant.create({
+  //     firstNameEn,
+  //     firstNameAr,
+  //     lastNameEn,
+  //     lastNameAr,
+  //     phoneNumber,
+  //     email,
+  //     joiningDate,
+  //     location,
+  //     propertyType,
+  //     propertyId,
+  //     buildingNo,
+  //     unitNo,
+  //     tenantPlan,
+  //     leaseType,
+  //     leaseStartDate,
+  //     leaseEndDate,
+  //     documents,
+  //   });
+
+  //   return tenant;
+  // }
   async createTenant(data) {
     const {
       firstNameEn,
@@ -10,6 +74,7 @@ class TenantService {
       lastNameAr,
       phoneNumber,
       email,
+      password,
       joiningDate,
       location,
       propertyType,
@@ -25,7 +90,10 @@ class TenantService {
 
     // Check email already exists
     const existingTenant = await Tenant.findOne({
-      where: { email },
+      where: {
+        email,
+        isDeleted: false,
+      },
     });
 
     if (existingTenant) {
@@ -43,6 +111,10 @@ class TenantService {
       );
     }
 
+    // Hash password
+    const hashedPassword = await generatePassword(password);
+
+    // Create tenant
     const tenant = await Tenant.create({
       firstNameEn,
       firstNameAr,
@@ -50,6 +122,8 @@ class TenantService {
       lastNameAr,
       phoneNumber,
       email,
+      password: hashedPassword,
+      accessToken: null,
       joiningDate,
       location,
       propertyType,
@@ -63,7 +137,12 @@ class TenantService {
       documents,
     });
 
-    return tenant;
+    // Remove sensitive fields
+    const response = tenant.toJSON();
+    delete response.password;
+    delete response.accessToken;
+
+    return response;
   }
 
   async getAllTenants(queryParams) {

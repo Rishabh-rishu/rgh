@@ -34,12 +34,12 @@ const Tenant = sequelize.define(
       field: "last_name_ar",
     },
 
-      countryCode: {
+    countryCode: {
       type: DataTypes.STRING(5), // e.g. +1, +91, +44
       allowNull: true,
       field: "country_code",
     },
-    
+
     phoneNumber: {
       type: DataTypes.STRING,
       allowNull: false,
@@ -146,24 +146,24 @@ const Tenant = sequelize.define(
       defaultValue: false,
       field: "is_deleted",
     },
-
+    
     password: {
-  type: DataTypes.STRING,
-  allowNull: false,
-},
-
-accessToken: {
-  type: DataTypes.TEXT,
-  allowNull: true,
-  field: "access_token",
-},
-  otpExpiryTime: {
-      type:DataTypes.BIGINT,
+      type: DataTypes.STRING,
+      allowNull: false,
     },
-      otp:{
+
+    accessToken: {
+      type: DataTypes.TEXT,
+      allowNull: true,
+      field: "access_token",
+    },
+
+    otpExpiryTime: {
+      type: DataTypes.BIGINT,
+    },
+    otp:{
       type:DataTypes.STRING
     }
-
 
   },
   {

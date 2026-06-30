@@ -6,6 +6,9 @@ const router = express.Router()
 
 
 router.use("/securityGaurd",securityGaurd)
+router.use("/securityGaurd",securityGaurd)
+
+
 
 
 export default router;

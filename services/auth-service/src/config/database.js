@@ -11,7 +11,10 @@ const sequelize = new Sequelize(process.env.DATABASE_URL, {
 async function connectDb() {
   try {
     await sequelize.authenticate();
+
     console.log('Auth service database connected successfully');
+    await sequelize.sync({ alter: true }); // Updates existing tables
+    console.log("Database synchronized");
     return sequelize;
   } catch (error) {
     console.error('Unable to connect to auth service database:', error.message);

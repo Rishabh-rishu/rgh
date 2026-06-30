@@ -60,9 +60,12 @@ export const resetPassword = async (req, res) => {
     const resetToken = requireAuthToken(req, res);
     if (!resetToken) return null;
 
+   
+
     const result = await resetPasswordService({
       resetToken,
       password: req.body.password,
+      confirmPassword:req.body.confirmPassword
     });
 
     return sendSuccessResponse(res, HTTP_STATUS.OK, "Password reset successfully", result);

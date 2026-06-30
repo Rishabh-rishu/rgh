@@ -2,6 +2,7 @@ import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import { Op } from "sequelize";
 import User from "../models/auth.model.js";
+import Tenant from "../models/tenant.model.js";
 
 const OTP = "123456";
 const ACCESS_TOKEN_EXPIRES_IN = "7d";
@@ -36,13 +37,13 @@ const createForgotPasswordToken = (user) =>
     OTP_TOKEN_EXPIRES_IN
   );
 
+
+
 const createResetPasswordToken = (decoded) =>
   signToken(
     {
       id: decoded.id,
       email: decoded.email,
-      role: decoded.role,
-      flow: "reset-password",
     },
     RESET_TOKEN_EXPIRES_IN
   );
@@ -50,9 +51,9 @@ const createResetPasswordToken = (decoded) =>
 const verifyForgotPasswordOtp = ({ accessToken, otp, role }) => {
   const decoded = verifyToken(accessToken);
 
-  if (decoded.flow !== "forgot-password" || decoded.role !== role) {
-    throw new Error("Invalid token flow");
-  }
+  // if (decoded.flow !== "forgot-password" || decoded.role !== role) {
+  //   throw new Error("Invalid token flow");
+  // }
 
   if (String(decoded.otp) !== String(otp)) {
     throw new Error("Invalid OTP");
@@ -61,34 +62,77 @@ const verifyForgotPasswordOtp = ({ accessToken, otp, role }) => {
   return createResetPasswordToken(decoded);
 };
 
-const resetUserPassword = async ({ resetToken, password, role }) => {
+const forgetPasswordForAdmin = async ({ resetToken, password}) => {
   const decoded = verifyToken(resetToken);
 
-  if (decoded.flow !== "reset-password" || decoded.role !== role) {
-    throw new Error("Invalid token flow");
-  }
+  // if (decoded.flow !== "reset-password" || decoded.role !== role) {
+  //   throw new Error("Invalid token flow");
+  // }
 
   const user = await User.findOne({
     where: {
       id: decoded.id,
-      role,
     },
   });
 
   if (!user) {
-    throw new Error("User not found");
+    throw new Error("Admin not found");
   }
 
   const passwordHash = await bcrypt.hash(password, 10);
 
-  await user.update({
+  await Tenant.update({
     passwordHash,
     accessToken: null,
   });
 
   return {
-    id: user.id,
-    email: user.email,
+    id: Tenant.id,
+    email: Tenant.email,
+  };
+};
+
+const resetUserPassword = async ({ resetToken, password,confirmPassword}) => {
+  const decoded = verifyToken(resetToken);
+
+  // if (decoded.flow !== "reset-password" || decoded.role !== role) {
+  //   throw new Error("Invalid token flow");
+  // }
+   console.log(decoded);
+  const user = await Tenant.findOne({
+    where: {
+      id: decoded.id,
+    },
+  });
+
+   console.log(user);
+
+  if (!user) {
+    throw new Error("Tenant not found");
+  }
+
+  if (password !== confirmPassword) {
+  throw new Error("Passwords do not match");
+}
+
+  const passwordHash = await bcrypt.hash(password, 10);
+  
+
+await Tenant.update(
+  {
+    password: passwordHash,
+    accessToken: null,
+  },
+  {
+    where: {
+      id: user.id,
+    },
+  }
+);
+
+  return {
+    id: Tenant.id,
+    email: Tenant.email,
   };
 };
 
@@ -166,10 +210,11 @@ export const verifyForgotPasswordOtpService = async ({ accessToken, otp }) => {
   return { resetToken };
 };
 
-export const resetPassword = async ({ resetToken, password }) =>
+export const resetPassword = async ({ resetToken, password,confirmPassword }) =>
   resetUserPassword({
     resetToken,
     password,
+    confirmPassword,
     role: "admin",
   });
 
@@ -192,91 +237,165 @@ export const logout = async (adminId) => {
 
 
 // Tenant Services
-export const tenantLogin = async ({ identifier }) => {
-  const tenant = await User.findOne({
-    where: {
-      role: "tenant",
-      [Op.or]: [
-        {
-          email: identifier,
-        },
-        {
-          phone: identifier,
-        },
-      ],
-    },
+
+// export const tenantLogin = async ({
+//   identifier,
+//   countryCode,
+//   password,
+// }) => {
+//   let whereClause = {
+//     role: "tenant",
+//   };
+
+//   if (identifier.includes("@")) {
+//     whereClause.email = identifier.toLowerCase();
+//   } else {
+
+//     if (!countryCode) {
+//       throw new Error("Country code is required for phone login");
+//     }
+
+//     whereClause.phone = identifier;
+//     whereClause.countryCode = countryCode;
+//   }
+
+//   const tenant = await User.findOne({
+//     where: whereClause,
+//   });
+
+//   if (!tenant) {
+//     throw new Error("Tenant not found");
+//   }
+
+//   if (tenant.isBlocked) {
+//     throw new Error("Tenant is blocked");
+//   }
+
+//   const isPasswordValid = await bcrypt.compare(
+//     password,
+//     tenant.passwordHash
+//   );
+
+//   if (!isPasswordValid) {
+//     throw new Error("Invalid credentials");
+//   }
+
+//   const accessToken = signToken(
+//     {
+//       id: tenant.id,
+//       email: tenant.email,
+//       role: tenant.role,
+//     },
+//     ACCESS_TOKEN_EXPIRES_IN
+//   );
+
+//   await tenant.update({ accessToken });
+
+//   return {
+//     tenantId: tenant.id,
+//     email: tenant.email,
+//     phoneNumber: tenant.phone,
+//     countryCode: tenant.countryCode,
+//     role: tenant.role,
+//     accessToken,
+//   };
+// };
+
+
+
+export const tenantLogin = async ({
+  email,
+  phoneNumber,
+  password,
+  countryCode,
+}) => {
+  let whereClause = {
+    isDeleted: false,
+    status: "ACTIVE",
+  };
+  
+    // Login with Email
+  if (email) {
+    whereClause.email = email.toLowerCase();
+  } else if (phoneNumber) {
+    if (!countryCode) {
+      throw new Error("Country code is required for phone login");
+    }
+
+    whereClause.phoneNumber = phoneNumber;
+    whereClause.countryCode = countryCode;
+  } else {
+    throw new Error("Email or phone number is required");
+  }
+
+  const tenant = await Tenant.findOne({
+    where: whereClause,
   });
 
   if (!tenant) {
     throw new Error("Tenant not found");
   }
 
-  if (tenant.isBlocked) {
-    throw new Error("Tenant is blocked");
+  // Compare password
+  const isPasswordValid = await bcrypt.compare(
+    password,
+    tenant.password
+  );
+
+  if (!isPasswordValid) {
+    throw new Error("Invalid credentials");
   }
 
+  // Generate Access Token
   const accessToken = signToken(
     {
       id: tenant.id,
-      otp: OTP,
-      role: tenant.role,
-      flow: "tenant-login",
-    },
-    OTP_TOKEN_EXPIRES_IN
-  );
-
-  await tenant.update({ accessToken });
-
-  return { accessToken };
-};
-
-export const verifyTenantLoginOtp = async ({ accessToken, otp }) => {
-  const decoded = verifyToken(accessToken);
-
-  if (decoded.flow !== "tenant-login" || decoded.role !== "tenant") {
-    throw new Error("Invalid token");
-  }
-
-  if (String(decoded.otp) !== String(otp)) {
-    throw new Error("Invalid OTP");
-  }
-
-  const tenant = await User.findOne({
-    where: {
-      id: decoded.id,
-      role: "tenant",
-    },
-  });
-
-  if (!tenant) {
-    throw new Error("Tenant not found");
-  }
-
-  const loginToken = signToken(
-    {
-      id: tenant.id,
       email: tenant.email,
-      role: tenant.role,
     },
     ACCESS_TOKEN_EXPIRES_IN
   );
 
-  await tenant.update({ accessToken: loginToken });
+  // Save Access Token
+  await tenant.update({ accessToken });
 
   return {
     tenantId: tenant.id,
+    firstName: tenant.firstNameEn,
+    lastName: tenant.lastNameEn,
     email: tenant.email,
-    role: tenant.role,
-    accessToken: loginToken,
+    countryCode:tenant.countryCode,
+    phoneNumber: tenant.phoneNumber,
+    accessToken,
   };
 };
 
-export const tenantForgotPassword = async ({ email }) => {
-  const tenant = await User.findOne({
-    where: {
-      email,
-      role: "tenant",
-    },
+export const tenantForgotPassword = async ({
+  email,
+  phoneNumber,
+  countryCode,
+}) => {
+  let whereClause = {
+    isDeleted: false,
+    status: "ACTIVE",
+  };
+
+  // Check whether identifier is email or phone
+  if (email) {
+    whereClause.email = email.toLowerCase();
+  } else if (phoneNumber) {
+    if (!countryCode) {
+      throw new Error("Country code is required for phone login");
+    }
+
+    whereClause.phoneNumber = phoneNumber;
+    whereClause.countryCode = countryCode;
+  } else {
+    throw new Error("Email or phone number is required");
+  }
+
+
+  const tenant = await Tenant.findOne({
+    where: whereClause,
   });
 
   if (!tenant) {
@@ -289,27 +408,261 @@ export const tenantForgotPassword = async ({ email }) => {
 
   const accessToken = createForgotPasswordToken(tenant);
 
-  await tenant.update({ accessToken });
+  await tenant.update({ accessToken , otp :"123456",otpExpiryTime: Date.now() + 60 * 1000});
 
-  return { accessToken };
+  return {
+    // tenantId: tenant.id,
+    // email: tenant.email,
+    // phoneNumber: tenant.phone,
+    // countryCode: tenant.countryCode,
+    // role: tenant.role,
+    accessToken,
+  };
 };
 
 export const tenantVerifyForgotPasswordOtp = async ({ accessToken, otp }) => {
+
   const resetToken = verifyForgotPasswordOtp({
     accessToken,
     otp,
     role: "tenant",
+  }); 
+   const tenant = await Tenant.findOne({
+    accessToken: accessToken,
   });
+
+  if(!tenant){
+    throw new Error("Invalid User");
+  }
+
+  if(!tenant.otp === otp){
+    throw new Error("Invalid Otp");
+  }
+
+  if(tenant.otpExpiryTime < Date.now()){
+    throw new Error("Otp Expired");
+  }
 
   return { resetToken };
 };
 
-export const tenantResetPassword = async ({ resetToken, password }) =>
+
+export const tenantResetPassword = async ({ resetToken, password ,confirmPassword}) =>
   resetUserPassword({
     resetToken,
     password,
-    role: "tenant",
+    confirmPassword
   });
+
+
+// export const tenantChangePassword = async ({
+//   tenantId,
+//   currentPassword,
+//   newPassword,
+// }) => {
+//   const tenant = await Tenant.findOne({
+//     where: {
+//       id: tenantId
+//     },
+//   });
+
+//   if (!tenant) {
+//     throw new Error("Tenant not found");
+//   }
+
+//   if (tenant.isBlocked) {
+//     throw new Error("Tenant is blocked");
+//   }
+
+//   const isPasswordValid = await bcrypt.compare(
+//     currentPassword,
+//     tenant.passwordHash
+//   );
+
+//   if (!isPasswordValid) {
+//     throw new Error("Current password is incorrect");
+//   }
+
+//   // Prevent using the same password
+//   const isSamePassword = await bcrypt.compare(
+//     newPassword,
+//     tenant.passwordHash
+//   );
+
+//   if (isSamePassword) {
+//     throw new Error("New password cannot be the same as the current password");
+//   }
+
+//   const passwordHash = await bcrypt.hash(newPassword, 10);
+
+//   await tenant.update({
+//     passwordHash,
+//     accessToken: null, // Optional: force re-login
+//   });
+
+//   return {
+//     message: "Password changed successfully",
+//   };
+// };
+
+export const tenantChangePassword = async ({
+  tenantId,
+  currentPassword,
+  newPassword,
+}) => {
+  const tenant = await Tenant.findOne({
+    where: {
+      id: tenantId,
+      isDeleted: false,
+      status: "ACTIVE",
+    },
+  });
+
+  if (!tenant) {
+    throw new Error("Tenant not found");
+  }
+
+  // Verify current password
+  const isPasswordValid = await bcrypt.compare(
+    currentPassword,
+    tenant.password
+  );
+
+  if (!isPasswordValid) {
+    throw new Error("Current password is incorrect");
+  }
+
+  // Prevent using the same password
+  const isSamePassword = await bcrypt.compare(
+    newPassword,
+    tenant.password
+  );
+
+  if (isSamePassword) {
+    throw new Error("New password cannot be the same as the current password");
+  }
+
+  // Hash the new password
+  const hashedPassword = await bcrypt.hash(newPassword, 10);
+
+  // Update password and invalidate access token
+  await tenant.update({
+    password: hashedPassword,
+    accessToken: null,
+  });
+
+  return {
+    success: true,
+    message: "Password changed successfully",
+  };
+};
+
+export const getTenantProfile = async (accessToken) => {
+  const tenant = await Tenant.findOne({
+    where: {
+      accessToken,
+        isDeleted: false,
+       status: "ACTIVE",
+    },
+    attributes: {
+      exclude: ["passwordHash", "accessToken"],
+    },
+  });
+  console.log(tenant)
+
+  if (!tenant) {
+    throw new Error("Tenant not found");
+  }
+
+  if (tenant.isBlocked) {
+    throw new Error("Tenant is blocked");
+  }
+
+  return tenant;
+};
+
+export const updateTenantProfiles =   async(tenantId, data) =>{
+
+   console.log(data);
+    const tenant = await Tenant.findOne({
+      where: {
+        // id: tenantId,
+        id: "ebc2215e-c96b-4b6d-a91e-1adf3bb2ed76",
+        isDeleted: false,
+      },
+    });
+
+   
+
+    if (!tenant) {
+      throw new Error("Tenant not found");
+    }
+
+
+
+    // Check if email is being updated
+    if (data.email && data.email !== tenant.email) {
+      const existingTenant = await Tenant.findOne({
+        where: {
+          email: data.email,
+          isDeleted: false,
+        },
+      });
+
+  
+      if (existingTenant) {
+        throw new Error("Email already exists");
+      }
+    }
+
+    // Validate lease dates
+    if (
+      data.leaseStartDate &&
+      data.leaseEndDate &&
+      new Date(data.leaseStartDate) >=
+        new Date(data.leaseEndDate)
+    ) {
+      throw new Error(
+        "Lease end date must be greater than lease start date"
+      );
+    }
+
+    await tenant.update({
+      firstNameEn: data.firstNameEn ?? tenant.firstNameEn,
+      firstNameAr: data.firstNameAr ?? tenant.firstNameAr,
+      lastNameEn: data.lastNameEn ?? tenant.lastNameEn,
+      lastNameAr: data.lastNameAr ?? tenant.lastNameAr,
+      countryCode: data.countryCode ?? tenant.countryCode,
+      phoneNumber: data.phoneNumber ?? tenant.phoneNumber,
+      email: data.email ?? tenant.email,
+      joiningDate: data.joiningDate ?? tenant.joiningDate,
+      location: data.location ?? tenant.location,
+      propertyType: data.propertyType ?? tenant.propertyType,
+      propertyId: data.propertyId ?? tenant.propertyId,
+      buildingNo: data.buildingNo ?? tenant.buildingNo,
+      unitNo: data.unitNo ?? tenant.unitNo,
+      tenantPlan: data.tenantPlan ?? tenant.tenantPlan,
+      leaseType: data.leaseType ?? tenant.leaseType,
+      leaseStartDate:
+        data.leaseStartDate ?? tenant.leaseStartDate,
+      leaseEndDate:
+        data.leaseEndDate ?? tenant.leaseEndDate,
+      documents: data.documents ?? tenant.documents,
+      status: data.status ?? tenant.status,
+    });
+
+    const response = tenant.toJSON();
+
+    delete response.password;
+    delete response.accessToken;
+
+    return response;
+  }
+
+
+
+
+
 
 
   // Security Guard Services 

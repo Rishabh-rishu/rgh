@@ -1,5 +1,5 @@
 import express from "express";
-import  amenityController from "../controllers/amenity.controller";
+import  amenityController from "../controllers/amenity.controller.js";
 
 
 

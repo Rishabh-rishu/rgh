@@ -49,7 +49,8 @@ export const adminLoginValidator = validateBody({
 });
 
 export const forgotPasswordValidator = validateBody({
-  email: { required: true, email: true },
+  identifier: { required: true },
+  countryCode: { requiredIf: (body) => !body.identifier.includes("@") },
 });
 
 export const otpValidator = validateBody({
