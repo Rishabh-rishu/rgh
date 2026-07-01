@@ -55,7 +55,7 @@ router.post(
   resetPassword
 );
 
-router.get(
+router.post(
   "/view-profile",
   verifyServiceTeamToken,
 viewProfile,
