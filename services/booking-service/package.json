@@ -1,0 +1,17 @@
+{
+  "name": "@rgh/booking-service",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "dev": "node --watch src/index.js",
+    "start": "node src/index.js",
+    "db:sync": "node src/scripts/syncDb.js"
+  },
+  "dependencies": {
+    "@rgh/shared": "*",
+    "dotenv": "^16.4.7",
+    "express": "^4.21.2",
+    "pg": "^8.13.3",
+    "sequelize": "^6.37.7"
+  }
+}

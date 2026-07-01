@@ -1,0 +1,23 @@
+const { Sequelize } = require('sequelize');
+
+const sequelize = new Sequelize(process.env.DATABASE_URL, {
+  dialect: 'postgres',
+  logging: process.env.DB_LOGGING === 'true' ? console.log : false,
+});
+
+async function connectDb() {
+  try {
+    await sequelize.authenticate();
+    console.log('Operations service database connected successfully');
+    await sequelize.sync({ alter: true }); // Updates existing tables
+    return sequelize;
+  } catch (error) {
+    console.error('Unable to connect to operations service database:', error.message);
+    throw error;
+  }
+}
+
+sequelize.connectDb = connectDb;
+sequelize.connectionDb = connectDb;
+
+module.exports = sequelize;
