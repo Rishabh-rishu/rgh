@@ -135,36 +135,34 @@ export const serviceTeamRegister = async ({
 };
 
 export const employeeLogin = async ({
-  role,
   employeeId,
   password,
 }) => {
   let employee;
-  let idField;
+  let role;
 
-  switch (role) {
-    case "security_guard":
-      idField = "guardId";
-      employee = await SecurityGuard.findOne({
-        where: {
-          guardId: employeeId,
-          isDeleted: false,
-        },
-      });
-      break;
+  // Check Security Guard
+  employee = await SecurityGuard.findOne({
+    where: {
+      guardId: employeeId,
+      isDeleted: false,
+    },
+  });
 
-    case "service_team":
-      idField = "serviceMemberId";
-      employee = await ServiceTeam.findOne({
-        where: {
-          serviceMemberId: employeeId,
-          isDeleted: false,
-        },
-      });
-      break;
+  if (employee) {
+    role = "security_guard";
+  } else {
+    // Check Service Team
+    employee = await ServiceTeam.findOne({
+      where: {
+        serviceMemberId: employeeId,
+        isDeleted: false,
+      },
+    });
 
-    default:
-      throw new Error("Invalid role");
+    if (employee) {
+      role = "service_team";
+    }
   }
 
   if (!employee) {
@@ -175,7 +173,7 @@ export const employeeLogin = async ({
 
   if (employee.status !== "ACTIVE") {
     throw new Error(
-      `Access to this account is currently restricted.\nPlease contact support for assistance.`
+      "Access to this account is currently restricted.\nPlease contact support for assistance."
     );
   }
 
@@ -204,10 +202,8 @@ export const employeeLogin = async ({
     id: employee.id,
     employeeId,
     role,
-    firstName:
-      employee.firstNameEnglish,
-    lastName:
-      employee.lastNameEnglish,
+    firstName: employee.firstNameEnglish,
+    lastName: employee.lastNameEnglish,
     accessToken,
   };
 };
@@ -215,14 +211,9 @@ export const employeeLogin = async ({
 
 
 export const staffForgotPassword = async ({
-  role,
   contactNumber,
   countryCode,
 }) => {
-  if (!role) {
-    throw new Error("Role is required");
-  }
-
   if (!contactNumber) {
     throw new Error("Contact number is required");
   }
@@ -231,29 +222,34 @@ export const staffForgotPassword = async ({
     throw new Error("Country code is required");
   }
 
-  let Model;
   let staff;
+  let role;
 
-  switch (role) {
-    case "security_guard":
-      Model = SecurityGuard;
-      break;
-
-    case "service_team":
-      Model = ServiceTeam;
-      break;
-
-    default:
-      throw new Error("Invalid role");
-  }
-
-  staff = await Model.findOne({
+  // Check Security Guard
+  staff = await SecurityGuard.findOne({
     where: {
       contactNumber,
       countryCode,
       isDeleted: false,
     },
   });
+
+  if (staff) {
+    role = "security_guard";
+  } else {
+    // Check Service Team
+    staff = await ServiceTeam.findOne({
+      where: {
+        contactNumber,
+        countryCode,
+        isDeleted: false,
+      },
+    });
+
+    if (staff) {
+      role = "service_team";
+    }
+  }
 
   if (!staff) {
     throw new Error(
@@ -263,7 +259,7 @@ export const staffForgotPassword = async ({
 
   if (staff.status !== "ACTIVE") {
     throw new Error(
-      `Access to this account is currently restricted.\nPlease contact support for assistance. - ${staff.countryCode}${staff.contactNumber}${staff.email ? `, ${staff.email}` : ""}`
+      `Access to this account is currently restricted.\nPlease contact support for assistance.`
     );
   }
 
@@ -279,6 +275,7 @@ export const staffForgotPassword = async ({
 
   return {
     accessToken,
+    role,
   };
 };
 
