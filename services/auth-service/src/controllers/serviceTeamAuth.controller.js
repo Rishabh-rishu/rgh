@@ -213,7 +213,7 @@ export const viewProfile = async (req, res) => {
   try {
     const result = await getStaffProfile({
       staffId: req.serviceTeam.id,
-      role: req.serviceTeam.role,
+      role: req.body.role,
     });
 
     return sendSuccessResponse(
@@ -235,7 +235,7 @@ export const logout = async (req, res) => {
   try {
     const result = await staffLogout({
       staffId: req.serviceTeam.id,
-      role: req.serviceTeam.role,
+          role: req.body.role,
     });
 
     return sendSuccessResponse(

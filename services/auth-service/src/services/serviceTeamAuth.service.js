@@ -560,8 +560,9 @@ export const staffLogout = async ({
    role,
 }) => {
   let Model;
-
+   console.log("role",role)
   switch (role) {
+ 
     case "security_guard":
       Model = SecurityGuard;
       break;

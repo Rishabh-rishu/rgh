@@ -55,7 +55,7 @@ router.post(
   resetPassword
 );
 
-router.get(
+router.post(
   "/view-profile",
   verifyServiceTeamToken,
 viewProfile,
@@ -69,7 +69,7 @@ changePassword,
   
 );
 
-router.get(
+router.post(
   "/logout",
   verifyServiceTeamToken,
   logout
