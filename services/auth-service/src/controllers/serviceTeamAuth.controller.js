@@ -207,9 +207,14 @@ export const changePassword = async (req, res) => {
 
 
 
+
+
 export const viewProfile = async (req, res) => {
   try {
-    const result = await getStaffProfile(req.serviceTeam.id);
+    const result = await getStaffProfile({
+      staffId: req.serviceTeam.id,
+      role: req.serviceTeam.role,
+    });
 
     return sendSuccessResponse(
       res,
@@ -228,7 +233,10 @@ export const viewProfile = async (req, res) => {
 
 export const logout = async (req, res) => {
   try {
-    const result = await staffLogout(req.serviceTeam.id);
+    const result = await staffLogout({
+      staffId: req.serviceTeam.id,
+      role: req.serviceTeam.role,
+    });
 
     return sendSuccessResponse(
       res,

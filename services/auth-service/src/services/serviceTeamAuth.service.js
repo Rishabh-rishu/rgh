@@ -509,8 +509,9 @@ export const staffChangePassword = async ({
 };
 
 export const getStaffProfile = async ({
-  role,
+
   staffId,
+    role,
 }) => {
   let Model;
 
@@ -554,8 +555,9 @@ export const getStaffProfile = async ({
 };
 
 export const staffLogout = async ({
-  role,
+ 
   staffId,
+   role,
 }) => {
   let Model;
 
