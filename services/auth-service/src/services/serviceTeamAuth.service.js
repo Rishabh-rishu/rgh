@@ -133,7 +133,6 @@ export const serviceTeamRegister = async ({
     contactNumber: serviceTeam.contactNumber,
   };
 };
-
 export const employeeLogin = async ({
   employeeId,
   password,
@@ -141,27 +140,27 @@ export const employeeLogin = async ({
   let employee;
   let role;
 
-  // Check Security Guard
-  employee = await SecurityGuard.findOne({
+  // Check Service Team first
+  employee = await ServiceTeam.findOne({
     where: {
-      guardId: employeeId,
+      serviceMemberId: employeeId,
       isDeleted: false,
     },
   });
 
   if (employee) {
-    role = "security_guard";
+    role = "service_team";
   } else {
-    // Check Service Team
-    employee = await ServiceTeam.findOne({
+    // Check Security Guard
+    employee = await SecurityGuard.findOne({
       where: {
-        serviceMemberId: employeeId,
+        guardId: employeeId,
         isDeleted: false,
       },
     });
 
     if (employee) {
-      role = "service_team";
+      role = "security_guard";
     }
   }
 
@@ -225,8 +224,8 @@ export const staffForgotPassword = async ({
   let staff;
   let role;
 
-  // Check Security Guard
-  staff = await SecurityGuard.findOne({
+  // Check Service Team first
+  staff = await ServiceTeam.findOne({
     where: {
       contactNumber,
       countryCode,
@@ -235,10 +234,10 @@ export const staffForgotPassword = async ({
   });
 
   if (staff) {
-    role = "security_guard";
+    role = "service_team";
   } else {
-    // Check Service Team
-    staff = await ServiceTeam.findOne({
+    // Check Security Guard
+    staff = await SecurityGuard.findOne({
       where: {
         contactNumber,
         countryCode,
@@ -247,7 +246,7 @@ export const staffForgotPassword = async ({
     });
 
     if (staff) {
-      role = "service_team";
+      role = "security_guard";
     }
   }
 
@@ -259,7 +258,7 @@ export const staffForgotPassword = async ({
 
   if (staff.status !== "ACTIVE") {
     throw new Error(
-      `Access to this account is currently restricted.\nPlease contact support for assistance.`
+      "Access to this account is currently restricted.\nPlease contact support for assistance."
     );
   }
 
