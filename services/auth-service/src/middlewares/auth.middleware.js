@@ -5,7 +5,7 @@
 import jwt from "jsonwebtoken";
 import shared from "@rgh/shared";
 import ThirdParty from "../models/thirdparty.model.js";
-
+import ServiceTeam from "../models/serviceTeam.model.js"
 const { sendErrorResponse } = shared;
 export const getTokenFromAuthorizationHeader = (authHeader) => {
   if (!authHeader) return null;
