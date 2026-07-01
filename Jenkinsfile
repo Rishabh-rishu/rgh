@@ -15,15 +15,15 @@ pipeline {
                     def branchConfig = [
                         'dev': [
                             server_ip: '15.206.187.208',
-                            deploy_dir: '/home/ubuntu/rgh-backend-dev'
+                            deploy_dir: '/home/ubuntu/rgh-backend'
                         ],
                         'test': [
                             server_ip: '15.206.187.209',   // apna test server IP daal
-                            deploy_dir: '/home/ubuntu/rgh-backend-test'
+                            deploy_dir: '/home/ubuntu/rgh-backend'
                         ],
                         'main': [
                             server_ip: '15.206.187.210',   // apna prod server IP daal
-                            deploy_dir: '/home/ubuntu/rgh-backend-prod'
+                            deploy_dir: '/home/ubuntu/rgh-backend'
                         ]
                     ]
 
