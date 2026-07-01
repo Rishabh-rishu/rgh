@@ -5,6 +5,7 @@ import tanantController from '../controllers/tanant.controller.js';
 import  amenityController from "../controllers/amenity.controller.js";
 import propertyController from "../controllers/property.controller.js";
 
+
 const router = express.Router();
 
 // Tanant Route

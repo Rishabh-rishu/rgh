@@ -1,10 +1,11 @@
 import express from "express";
 import * as AmenityController from "../controllers/amenity.controller.js";
-import validateRequest from "../middleware/validateRequest.js";
+import validateRequest from "../middlewares/validateRequest.js";
 import {
   createAmenityValidator,
   updateAmenityValidator,
 } from "../validator/amenity.validator.js";
+import { verifyAdminToken } from "../middlewares/auth.middleware.js";
 
 const router = express.Router();
 
@@ -12,34 +13,34 @@ const router = express.Router();
 
 router.post(
   "/admin/createAmenity",
-  validateRequest(createAmenityValidator),
+  validateRequest(createAmenityValidator),verifyAdminToken,
   AmenityController.createAmenity
 );
 
 router.get(
-  "/admin/getAllAmenities",
+  "/admin/getAllAmenities",verifyAdminToken,
   AmenityController.getAllAmenities
 );
 
 router.get(
-  "/admin/getAmenityById/:id",
+  "/admin/getAmenityById/:id",verifyAdminToken,
   AmenityController.getAmenityById
 );
 
 router.put(
   "/admin/updateAmenity/:id",
-  validateRequest(updateAmenityValidator),
+  validateRequest(updateAmenityValidator),verifyAdminToken,
   AmenityController.updateAmenity
 );
 
 router.patch(
-  "/admin/updateAmenity/:id",
+  "/admin/updateAmenity/:id",verifyAdminToken,
   AmenityController.updateAmenityStatus
 );
 
 
 router.delete(
-  "/admin/deleteAmenity/:id",
+  "/admin/deleteAmenity/:id",verifyAdminToken,
   AmenityController.deleteAmenity
 );
 

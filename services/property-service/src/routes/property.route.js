@@ -1,10 +1,11 @@
 import express from "express";
 import * as propertyController from "../controllers/property.controller.js";
-import validateRequest from "../middleware/validateRequest.js";
+import validateRequest from "../middlewares/validateRequest.js";
 import {
   createPropertyValidator,
   updatePropertyValidator,
 } from "../validator/property.validator.js";
+import { verifyAdminToken } from "../middlewares/auth.middleware.js";
 
 const router = express.Router();
 
@@ -12,33 +13,33 @@ const router = express.Router();
 
 router.post(
   "/admin/",
-  validateRequest(createPropertyValidator),
+  validateRequest(createPropertyValidator),verifyAdminToken,
   propertyController.createProperty
 );
 
 router.get(
-  "/admin/",
-  propertyController.getAllProperties
+  "/admin/",verifyAdminToken,
+  propertyController.getAllProperties,
 );
 
 router.get(
-  "/admin/:id",
+  "/admin/:id",verifyAdminToken,
   propertyController.getPropertyById
 );
 
 router.put(
   "/admin/:id",
-  validateRequest(updatePropertyValidator),
+  validateRequest(updatePropertyValidator),verifyAdminToken,
   propertyController.updateProperty
 );
 
 router.patch(
-  "/admin/:id/status",
+  "/admin/:id/status",verifyAdminToken,
   propertyController.updatePropertyStatus
 );
 
 router.delete(
-  "/admin/:id",
+  "/admin/:id",verifyAdminToken,
   propertyController.deleteProperty
 );
 

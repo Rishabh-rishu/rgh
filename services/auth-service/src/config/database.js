@@ -13,7 +13,7 @@ async function connectDb() {
     await sequelize.authenticate();
 
     console.log('Auth service database connected successfully');
-    await sequelize.sync({ alter: true }); // Updates existing tables
+    // await sequelize.sync({ alter: true }); // Updates existing tables
     console.log("Database synchronized");
     return sequelize;
   } catch (error) {
